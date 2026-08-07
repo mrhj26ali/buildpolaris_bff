@@ -27,8 +27,7 @@ def _send_email(recipient: str, subject: str, html: str):
 	try:
 		frappe.sendmail(recipients=[recipient], subject=subject, message=html, now=True)
 	except Exception as e:
-		# FIX: In local dev without SMTP configured, log the error but DO NOT crash the registration API.
-		# The tenant is still created, and the token is still in the DB.
+		# In local dev without SMTP configured, log the error but DO NOT crash the registration API.
 		frappe.log_error(title="BuildPolaris Email Failed", message=f"Could not send to {recipient}: {str(e)}")
 
 
@@ -46,16 +45,11 @@ def register_new_tenant(company_name, admin_email, admin_name, admin_password,
 	if bridge.user_exists(admin_email):
 		frappe.throw("A user with this email already exists.")
 
-	# Generate a unique abbreviation to prevent collisions in tests/multi-tenant setups.
-	# ERPNext requires company abbreviations to be globally unique per site.
 	initials = "".join(w[0].upper() for w in company_name.split()[:2]) or "BP"
 	abbr = (initials + secrets.token_hex(2)).upper()
 
-	# 1. Tenant
 	company = bridge.create_company(company_name, abbr, country, currency)
 
-	# 2. Admin user (DISABLED until email verification)
-	# FIX: Pass roles directly during creation to avoid "No Roles Specified" warning
 	bridge.create_platform_user(admin_email, admin_name, password=admin_password, enabled=0, roles=[ADMIN_ROLE_NAME])
 
 	token, expiry = _token(), now_datetime() + timedelta(hours=ACTIVATION_TTL_HOURS)
@@ -63,10 +57,8 @@ def register_new_tenant(company_name, admin_email, admin_name, admin_password,
 		admin_email,
 		bp_company=company, bp_activation_token=token, bp_activation_expiry=expiry,
 	)
-	# 3. Isolation applied immediately (FR-1.5)
 	bridge.add_company_permission(admin_email, company)
 
-	# 4. Verification email
 	link = f"{_pwa_url()}/activate?token={token}"
 	_send_email(
 		admin_email,
@@ -139,9 +131,6 @@ def resend_activation(email: str) -> dict:
 
 
 def dev_get_activation_token(email: str):
-	"""Dev-only helper (NOT whitelisted). Usage:
-	bench --site SITE execute buildpolaris_bff.application.identity_service.dev_get_activation_token --args "['email']"
-	"""
 	fields = bridge.get_user_fields(email, ["bp_activation_token", "bp_invite_token"])
 	print("activation:", fields.get("bp_activation_token"))
 	print("invite:", fields.get("bp_invite_token"))
@@ -199,7 +188,12 @@ def _require_same_tenant(target_email: str, company: str):
 
 
 def _tenant_admin_count(company: str) -> int:
-	users = frappe.get_all("User", filters={"bp_company": company, "enabled": 1}, pluck="name")
+	users = frappe.get_all(
+		"User", 
+		filters={"bp_company": company, "enabled": 1}, 
+		pluck="name",
+		ignore_permissions=True
+	)
 	return sum(1 for u in users if ADMIN_ROLE_NAME in frappe.get_roles(u))
 
 
@@ -219,11 +213,13 @@ def available_roles() -> list[dict]:
 
 def list_tenant_users() -> list[dict]:
 	company = require_tenant_member()
+	# FIX: ignore_permissions=True prevents 403 when BFF admin lists users
 	rows = frappe.get_all(
 		"User",
 		filters={"bp_company": company},
 		fields=["name", "email", "full_name", "enabled", "bp_invite_status"],
 		order_by="creation asc",
+		ignore_permissions=True,
 	)
 	platform_roles = set(get_platform_role_names())
 	for row in rows:
@@ -239,8 +235,6 @@ def invite_user(email: str, full_name: str, roles: list[str]) -> dict:
 	if bridge.user_exists(email):
 		frappe.throw("A user with this email already exists.")
 
-	# Create enabled-but-passwordless user; login impossible until activation
-	# FIX: Pass roles directly during creation to avoid "No Roles Specified" warning
 	bridge.create_platform_user(email, full_name, password=None, enabled=1, roles=roles)
 
 	token, expiry = _token(), now_datetime() + timedelta(hours=INVITE_TTL_HOURS)
@@ -249,7 +243,6 @@ def invite_user(email: str, full_name: str, roles: list[str]) -> dict:
 		bp_company=company, bp_invite_token=token, bp_invite_expiry=expiry,
 		bp_invite_status="Pending", bp_needs_password=1, bp_invited_by=frappe.session.user,
 	)
-	# FR-1.5 — isolation enforced at invite time
 	bridge.add_company_permission(email, company)
 
 	link = f"{_pwa_url()}/activate?token={token}"
@@ -266,7 +259,7 @@ def invite_user(email: str, full_name: str, roles: list[str]) -> dict:
 def resend_invite(email: str) -> dict:
 	company = require_admin()
 	_require_same_tenant(email, company)
-	token, expiry = _token(), now_datetime() + timedelta(hours=INVITE_TTL_HOURS)  # invalidates previous link
+	token, expiry = _token(), now_datetime() + timedelta(hours=INVITE_TTL_HOURS)
 	bridge.set_user_fields(email, bp_invite_token=token, bp_invite_expiry=expiry,
 						   bp_invite_status="Pending")
 	link = f"{_pwa_url()}/activate?token={token}"
@@ -281,10 +274,11 @@ def update_user_roles(email: str, roles: list[str]) -> dict:
 	_require_same_tenant(email, company)
 	_validate_roles(roles)
 
-	# FR-1.10 — last-admin protection
-	is_admin_now = ADMIN_ROLE_NAME in frappe.get_roles(email)
-	if is_admin_now and ADMIN_ROLE_NAME not in roles and _tenant_admin_count(company) <= 1:
-		frappe.throw("Cannot remove the last tenant Admin.")
+	# FIX: Elevate privileges locally just to check roles of another user before writing
+	with bridge.sudo_as_administrator():
+		is_admin_now = ADMIN_ROLE_NAME in frappe.get_roles(email)
+		if is_admin_now and ADMIN_ROLE_NAME not in roles and _tenant_admin_count(company) <= 1:
+			frappe.throw("Cannot remove the last tenant Admin.")
 
 	bridge.set_platform_roles(email, roles)
 	return {"status": "updated"}
@@ -296,8 +290,11 @@ def set_user_enabled(email: str, enabled: bool) -> dict:
 
 	if email == frappe.session.user and not enabled:
 		frappe.throw("You cannot disable your own account.")
-	if not enabled and ADMIN_ROLE_NAME in frappe.get_roles(email) and _tenant_admin_count(company) <= 1:
-		frappe.throw("Cannot disable the last tenant Admin.")
+		
+	# FIX: Elevate privileges locally just to check roles of another user before writing
+	with bridge.sudo_as_administrator():
+		if not enabled and ADMIN_ROLE_NAME in frappe.get_roles(email) and _tenant_admin_count(company) <= 1:
+			frappe.throw("Cannot disable the last tenant Admin.")
 
 	bridge.set_user_fields(email, enabled=1 if enabled else 0)
 	return {"status": "enabled" if enabled else "disabled"}

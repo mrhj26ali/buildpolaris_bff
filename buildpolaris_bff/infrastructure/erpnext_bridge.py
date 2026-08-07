@@ -47,7 +47,7 @@ def create_platform_user(email: str, full_name: str, password: str | None = None
 		if password:
 			user.new_password = password
 			
-		# FIX: Append roles BEFORE insert to satisfy ERPNext's native validation
+		# Append roles BEFORE insert to satisfy ERPNext's native validation
 		if roles:
 			for role in roles:
 				user.append("roles", {"role": role})
@@ -74,7 +74,16 @@ def set_user_fields(email: str, **fields):
 
 
 def get_user_fields(email: str, fields: list[str]) -> dict:
-	return frappe.db.get_value("User", email, fields, as_dict=True) or {}
+	# FIX: Use get_all with ignore_permissions=True to safely bypass native User guards
+	# WITHOUT mutating global session state (which breaks the whitelist registry on hot-reload)
+	result = frappe.get_all(
+		"User",
+		filters={"name": email},
+		fields=fields,
+		limit=1,
+		ignore_permissions=True
+	)
+	return result[0] if result else {}
 
 
 def add_company_permission(email: str, company: str):
@@ -89,9 +98,24 @@ def add_company_permission(email: str, company: str):
 
 
 def get_user_company(email: str) -> str | None:
-	company = frappe.db.get_value("User", email, "bp_company")
+	# FIX: Use get_all with ignore_permissions=True to safely bypass native User guards
+	result = frappe.get_all(
+		"User",
+		filters={"name": email},
+		fields=["bp_company"],
+		limit=1,
+		ignore_permissions=True
+	)
+	company = result[0].get("bp_company") if result else None
+	
 	if not company:
-		company = frappe.db.get_value(
-			"User Permission", {"user": email, "allow": "Company"}, "for_value"
+		perm_result = frappe.get_all(
+			"User Permission",
+			filters={"user": email, "allow": "Company"},
+			fields=["for_value"],
+			limit=1,
+			ignore_permissions=True
 		)
+		company = perm_result[0].get("for_value") if perm_result else None
+		
 	return company
