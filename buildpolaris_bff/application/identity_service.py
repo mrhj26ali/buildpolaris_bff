@@ -28,7 +28,7 @@ def _send_email(recipient: str, subject: str, html: str):
 		frappe.sendmail(recipients=[recipient], subject=subject, message=html, now=True)
 	except Exception as e:
 		# In local dev without SMTP configured, log the error but DO NOT crash the registration API.
-		frappe.log_error(title="BuildPolaris Email Failed", message=f"Could not send to {recipient}: {str(e)}")
+		frappe.log_error(title="BuildPolaris Email Failed", message=f"Could not send to {recipient}: {e!s}")
 
 
 # ---------------------------------------------------------------- UC-01 (FR-1.1)
@@ -189,8 +189,8 @@ def _require_same_tenant(target_email: str, company: str):
 
 def _tenant_admin_count(company: str) -> int:
 	users = frappe.get_all(
-		"User", 
-		filters={"bp_company": company, "enabled": 1}, 
+		"User",
+		filters={"bp_company": company, "enabled": 1},
 		pluck="name",
 		ignore_permissions=True
 	)
@@ -290,7 +290,7 @@ def set_user_enabled(email: str, enabled: bool) -> dict:
 
 	if email == frappe.session.user and not enabled:
 		frappe.throw("You cannot disable your own account.")
-		
+
 	# FIX: Elevate privileges locally just to check roles of another user before writing
 	with bridge.sudo_as_administrator():
 		if not enabled and ADMIN_ROLE_NAME in frappe.get_roles(email) and _tenant_admin_count(company) <= 1:

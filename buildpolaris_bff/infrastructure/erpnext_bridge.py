@@ -46,12 +46,12 @@ def create_platform_user(email: str, full_name: str, password: str | None = None
 		user.user_type = "System User"
 		if password:
 			user.new_password = password
-			
+
 		# Append roles BEFORE insert to satisfy ERPNext's native validation
 		if roles:
 			for role in roles:
 				user.append("roles", {"role": role})
-				
+
 		user.insert(ignore_permissions=True)
 		return user.name
 
@@ -107,7 +107,7 @@ def get_user_company(email: str) -> str | None:
 		ignore_permissions=True
 	)
 	company = result[0].get("bp_company") if result else None
-	
+
 	if not company:
 		perm_result = frappe.get_all(
 			"User Permission",
@@ -117,5 +117,5 @@ def get_user_company(email: str) -> str | None:
 			ignore_permissions=True
 		)
 		company = perm_result[0].get("for_value") if perm_result else None
-		
+
 	return company
