@@ -35,8 +35,11 @@ class TestModule1Identity(unittest.TestCase):
 		self.assertEqual(frappe.db.get_value("User", email, "enabled"), 0)
 		self.assertIn(ADMIN_ROLE_NAME, frappe.get_roles(email))
 		self.assertEqual(bridge.get_user_company(email), company_name)
-		self.assertTrue(frappe.db.exists(
-			"User Permission", {"user": email, "allow": "Company", "for_value": company_name}))
+		self.assertTrue(
+			frappe.db.exists(
+				"User Permission", {"user": email, "allow": "Company", "for_value": company_name}
+			)
+		)
 
 	def test_uc01_duplicate_company_rejected(self):
 		suffix = _u()
@@ -73,8 +76,9 @@ class TestModule1Identity(unittest.TestCase):
 
 		self.assertIn("BuildPolaris Site Superintendent", frappe.get_roles(invitee))
 		self.assertEqual(bridge.get_user_company(invitee), company)
-		self.assertTrue(frappe.db.exists(
-			"User Permission", {"user": invitee, "allow": "Company", "for_value": company}))
+		self.assertTrue(
+			frappe.db.exists("User Permission", {"user": invitee, "allow": "Company", "for_value": company})
+		)
 		self.assertEqual(frappe.db.get_value("User", invitee, "bp_needs_password"), 1)
 
 	def test_uc02_invitee_activation_requires_password(self):

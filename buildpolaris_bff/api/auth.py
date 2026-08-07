@@ -17,13 +17,16 @@ def get_current_user():
 
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=5, seconds=3600, ip_based=True)
-def register_tenant(company_name: str, admin_email: str, admin_name: str,
-					admin_password: str, country: str = "United States",
-					currency: str = "USD"):
+def register_tenant(
+	company_name: str,
+	admin_email: str,
+	admin_name: str,
+	admin_password: str,
+	country: str = "United States",
+	currency: str = "USD",
+):
 	"""UC-01 (FR-1.1, FR-1.9)"""
-	return svc.register_new_tenant(
-		company_name, admin_email, admin_name, admin_password, country, currency
-	)
+	return svc.register_new_tenant(company_name, admin_email, admin_name, admin_password, country, currency)
 
 
 @frappe.whitelist(allow_guest=True)

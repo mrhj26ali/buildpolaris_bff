@@ -32,8 +32,9 @@ def _send_email(recipient: str, subject: str, html: str):
 
 
 # ---------------------------------------------------------------- UC-01 (FR-1.1)
-def register_new_tenant(company_name, admin_email, admin_name, admin_password,
-						country="United States", currency="USD") -> dict:
+def register_new_tenant(
+	company_name, admin_email, admin_name, admin_password, country="United States", currency="USD"
+) -> dict:
 	if not all([company_name, admin_email, admin_name, admin_password]):
 		frappe.throw("Missing required fields.")
 	if len(admin_password) < 8:
@@ -50,12 +51,16 @@ def register_new_tenant(company_name, admin_email, admin_name, admin_password,
 
 	company = bridge.create_company(company_name, abbr, country, currency)
 
-	bridge.create_platform_user(admin_email, admin_name, password=admin_password, enabled=0, roles=[ADMIN_ROLE_NAME])
+	bridge.create_platform_user(
+		admin_email, admin_name, password=admin_password, enabled=0, roles=[ADMIN_ROLE_NAME]
+	)
 
 	token, expiry = _token(), now_datetime() + timedelta(hours=ACTIVATION_TTL_HOURS)
 	bridge.set_user_fields(
 		admin_email,
-		bp_company=company, bp_activation_token=token, bp_activation_expiry=expiry,
+		bp_company=company,
+		bp_activation_token=token,
+		bp_activation_expiry=expiry,
 	)
 	bridge.add_company_permission(admin_email, company)
 
@@ -69,22 +74,30 @@ def register_new_tenant(company_name, admin_email, admin_name, admin_password,
 		f"<p>This link expires in {ACTIVATION_TTL_HOURS} hours.</p>",
 	)
 
-	return {"status": "success", "company": company, "admin_email": admin_email,
-			"message": "Workspace created. Check your email to activate it."}
+	return {
+		"status": "success",
+		"company": company,
+		"admin_email": admin_email,
+		"message": "Workspace created. Check your email to activate it.",
+	}
 
 
 def activate_account(token: str, password: str | None = None) -> dict:
-	user_email = (
-		frappe.db.get_value("User", {"bp_activation_token": token}, "name")
-		or frappe.db.get_value("User", {"bp_invite_token": token}, "name")
+	user_email = frappe.db.get_value("User", {"bp_activation_token": token}, "name") or frappe.db.get_value(
+		"User", {"bp_invite_token": token}, "name"
 	)
 	if not user_email:
 		return {"status": "invalid"}
 
 	fields = bridge.get_user_fields(
 		user_email,
-		["bp_activation_token", "bp_activation_expiry", "bp_invite_token",
-		 "bp_invite_expiry", "bp_needs_password"],
+		[
+			"bp_activation_token",
+			"bp_activation_expiry",
+			"bp_invite_token",
+			"bp_invite_expiry",
+			"bp_needs_password",
+		],
 	)
 
 	expiry = (
@@ -124,9 +137,11 @@ def resend_activation(email: str) -> dict:
 	token, expiry = _token(), now_datetime() + timedelta(hours=ACTIVATION_TTL_HOURS)
 	bridge.set_user_fields(email, bp_activation_token=token, bp_activation_expiry=expiry)
 	link = f"{_pwa_url()}/activate?token={token}"
-	_send_email(email, "Activate your BuildPolaris account",
-				f"<p><a href='{link}'>Activate account</a></p>"
-				f"<p>Expires in {ACTIVATION_TTL_HOURS} hours.</p>")
+	_send_email(
+		email,
+		"Activate your BuildPolaris account",
+		f"<p><a href='{link}'>Activate account</a></p><p>Expires in {ACTIVATION_TTL_HOURS} hours.</p>",
+	)
 	return {"status": "sent", "company": company}
 
 
@@ -134,7 +149,10 @@ def dev_get_activation_token(email: str):
 	fields = bridge.get_user_fields(email, ["bp_activation_token", "bp_invite_token"])
 	print("activation:", fields.get("bp_activation_token"))
 	print("invite:", fields.get("bp_invite_token"))
-	print("link:", f"{_pwa_url()}/activate?token={fields.get('bp_invite_token') or fields.get('bp_activation_token')}")
+	print(
+		"link:",
+		f"{_pwa_url()}/activate?token={fields.get('bp_invite_token') or fields.get('bp_activation_token')}",
+	)
 
 
 # ---------------------------------------------------------------- Session (UC-03/UC-04)
@@ -170,9 +188,13 @@ def require_tenant_member() -> str:
 def require_admin() -> str:
 	company = require_tenant_member()
 	if ADMIN_ROLE_NAME not in frappe.get_roles(frappe.session.user):
-		log_security_event("UNAUTHORIZED_ADMIN_ACCESS", {
-			"user": frappe.session.user, "company": company,
-		})
+		log_security_event(
+			"UNAUTHORIZED_ADMIN_ACCESS",
+			{
+				"user": frappe.session.user,
+				"company": company,
+			},
+		)
 		frappe.throw("Admin role required", frappe.PermissionError)
 	return company
 
@@ -180,19 +202,21 @@ def require_admin() -> str:
 def _require_same_tenant(target_email: str, company: str):
 	target_company = bridge.get_user_company(target_email)
 	if target_company != company:
-		log_security_event("CROSS_TENANT_ACCESS_ATTEMPT", {
-			"user": frappe.session.user, "target": target_email,
-			"tenant": company, "target_tenant": target_company,
-		})
+		log_security_event(
+			"CROSS_TENANT_ACCESS_ATTEMPT",
+			{
+				"user": frappe.session.user,
+				"target": target_email,
+				"tenant": company,
+				"target_tenant": target_company,
+			},
+		)
 		frappe.throw("Forbidden", frappe.PermissionError)
 
 
 def _tenant_admin_count(company: str) -> int:
 	users = frappe.get_all(
-		"User",
-		filters={"bp_company": company, "enabled": 1},
-		pluck="name",
-		ignore_permissions=True
+		"User", filters={"bp_company": company, "enabled": 1}, pluck="name", ignore_permissions=True
 	)
 	return sum(1 for u in users if ADMIN_ROLE_NAME in frappe.get_roles(u))
 
@@ -240,8 +264,12 @@ def invite_user(email: str, full_name: str, roles: list[str]) -> dict:
 	token, expiry = _token(), now_datetime() + timedelta(hours=INVITE_TTL_HOURS)
 	bridge.set_user_fields(
 		email,
-		bp_company=company, bp_invite_token=token, bp_invite_expiry=expiry,
-		bp_invite_status="Pending", bp_needs_password=1, bp_invited_by=frappe.session.user,
+		bp_company=company,
+		bp_invite_token=token,
+		bp_invite_expiry=expiry,
+		bp_invite_status="Pending",
+		bp_needs_password=1,
+		bp_invited_by=frappe.session.user,
 	)
 	bridge.add_company_permission(email, company)
 
@@ -260,12 +288,13 @@ def resend_invite(email: str) -> dict:
 	company = require_admin()
 	_require_same_tenant(email, company)
 	token, expiry = _token(), now_datetime() + timedelta(hours=INVITE_TTL_HOURS)
-	bridge.set_user_fields(email, bp_invite_token=token, bp_invite_expiry=expiry,
-						   bp_invite_status="Pending")
+	bridge.set_user_fields(email, bp_invite_token=token, bp_invite_expiry=expiry, bp_invite_status="Pending")
 	link = f"{_pwa_url()}/activate?token={token}"
-	_send_email(email, f"Invitation to {company} (refreshed)",
-				f"<p><a href='{link}'>Set your password</a></p>"
-				f"<p>Expires in {INVITE_TTL_HOURS} hours.</p>")
+	_send_email(
+		email,
+		f"Invitation to {company} (refreshed)",
+		f"<p><a href='{link}'>Set your password</a></p><p>Expires in {INVITE_TTL_HOURS} hours.</p>",
+	)
 	return {"status": "resent"}
 
 

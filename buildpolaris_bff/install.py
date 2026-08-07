@@ -1,24 +1,49 @@
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
 ADMIN_ROLE_NAME = "BuildPolaris Admin"
 # FR-1.8 — Role Catalog (single source of truth, code-first)
 PLATFORM_ROLES = [
-	{"role": "BuildPolaris Admin", "persona": "admin",
-	 "description": "Full tenant administration: users, roles, settings."},
-	{"role": "BuildPolaris Owner", "persona": "owner",
-	 "description": "Read-heavy: CO final approval, EVM visibility, closeout sign-off."},
-	{"role": "BuildPolaris Project Manager", "persona": "pm",
-	 "description": "Owns schedule, budget, RFIs, COs, EVM for assigned projects."},
-	{"role": "BuildPolaris Accounting", "persona": "pm",
-	 "description": "Pay app approval, retainage, financial reconciliation."},
-	{"role": "BuildPolaris Document Controller", "persona": "pm",
-	 "description": "Manages CDE, drawing revisions, IFC gating, transmittals."},
-	{"role": "BuildPolaris Site Superintendent", "persona": "site_super",
-	 "description": "Field lead: daily logs, lookaheads, punch lists, safety."},
-	{"role": "BuildPolaris Safety Officer", "persona": "site_super",
-	 "description": "Inspections, incident logging."},
-	{"role": "BuildPolaris Subcontractor", "persona": "subcontractor",
-	 "description": "Restricted scope: submittals, RFIs, pay apps, punch resolution, closeout docs."},
+	{
+		"role": "BuildPolaris Admin",
+		"persona": "admin",
+		"description": "Full tenant administration: users, roles, settings.",
+	},
+	{
+		"role": "BuildPolaris Owner",
+		"persona": "owner",
+		"description": "Read-heavy: CO final approval, EVM visibility, closeout sign-off.",
+	},
+	{
+		"role": "BuildPolaris Project Manager",
+		"persona": "pm",
+		"description": "Owns schedule, budget, RFIs, COs, EVM for assigned projects.",
+	},
+	{
+		"role": "BuildPolaris Accounting",
+		"persona": "pm",
+		"description": "Pay app approval, retainage, financial reconciliation.",
+	},
+	{
+		"role": "BuildPolaris Document Controller",
+		"persona": "pm",
+		"description": "Manages CDE, drawing revisions, IFC gating, transmittals.",
+	},
+	{
+		"role": "BuildPolaris Site Superintendent",
+		"persona": "site_super",
+		"description": "Field lead: daily logs, lookaheads, punch lists, safety.",
+	},
+	{
+		"role": "BuildPolaris Safety Officer",
+		"persona": "site_super",
+		"description": "Inspections, incident logging.",
+	},
+	{
+		"role": "BuildPolaris Subcontractor",
+		"persona": "subcontractor",
+		"description": "Restricted scope: submittals, RFIs, pay apps, punch resolution, closeout docs.",
+	},
 ]
 
 
@@ -56,16 +81,39 @@ def create_bp_custom_fields():
 	create_custom_fields(
 		{
 			"User": [
-				{"fieldname": "bp_section", "fieldtype": "Section Break",
-				 "label": "BuildPolaris", "insert_after": "enabled"},
-				{"fieldname": "bp_company", "fieldtype": "Link", "options": "Company",
-				 "label": "BuildPolaris Company", "read_only": 1},
-				{"fieldname": "bp_invite_status", "fieldtype": "Select",
-				 "options": "\nPending\nAccepted\nExpired", "label": "Invite Status", "read_only": 1},
-				{"fieldname": "bp_needs_password", "fieldtype": "Check",
-				 "label": "Needs Password", "read_only": 1},
-				{"fieldname": "bp_invited_by", "fieldtype": "Link", "options": "User",
-				 "label": "Invited By", "read_only": 1},
+				{
+					"fieldname": "bp_section",
+					"fieldtype": "Section Break",
+					"label": "BuildPolaris",
+					"insert_after": "enabled",
+				},
+				{
+					"fieldname": "bp_company",
+					"fieldtype": "Link",
+					"options": "Company",
+					"label": "BuildPolaris Company",
+					"read_only": 1,
+				},
+				{
+					"fieldname": "bp_invite_status",
+					"fieldtype": "Select",
+					"options": "\nPending\nAccepted\nExpired",
+					"label": "Invite Status",
+					"read_only": 1,
+				},
+				{
+					"fieldname": "bp_needs_password",
+					"fieldtype": "Check",
+					"label": "Needs Password",
+					"read_only": 1,
+				},
+				{
+					"fieldname": "bp_invited_by",
+					"fieldtype": "Link",
+					"options": "User",
+					"label": "Invited By",
+					"read_only": 1,
+				},
 				{"fieldname": "bp_column_1", "fieldtype": "Column Break"},
 				{"fieldname": "bp_activation_token", "fieldtype": "Data", "hidden": 1},
 				{"fieldname": "bp_activation_expiry", "fieldtype": "Datetime", "hidden": 1},
@@ -85,13 +133,18 @@ def enable_versioning():
 	for doctype in ("User", "Company"):
 		existing = frappe.db.exists(
 			"Property Setter",
-			{"doc_type": doctype, "property": "track_changes", "doc_type": doctype, "field_name": ["is", "not set"]},
+			{"doc_type": doctype, "property": "track_changes", "field_name": ["is", "not set"]},
 		)
 		if not existing:
 			try:
 				make_property_setter(
-					doctype, None, "track_changes", "1", "Check",
-					for_doctype=True, validate_fields_for_doctype=False,
+					doctype,
+					None,
+					"track_changes",
+					"1",
+					"Check",
+					for_doctype=True,
+					validate_fields_for_doctype=False,
 				)
 			except Exception:
 				frappe.db.set_value("DocType", doctype, "track_changes", 1)

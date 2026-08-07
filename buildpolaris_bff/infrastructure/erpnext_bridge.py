@@ -36,7 +36,9 @@ def create_company(company_name: str, abbr: str, country: str, currency: str) ->
 		return company.name
 
 
-def create_platform_user(email: str, full_name: str, password: str | None = None, enabled: int = 1, roles: list[str] | None = None) -> str:
+def create_platform_user(
+	email: str, full_name: str, password: str | None = None, enabled: int = 1, roles: list[str] | None = None
+) -> str:
 	with sudo_as_administrator():
 		user = frappe.new_doc("User")
 		user.email = email
@@ -76,13 +78,7 @@ def set_user_fields(email: str, **fields):
 def get_user_fields(email: str, fields: list[str]) -> dict:
 	# FIX: Use get_all with ignore_permissions=True to safely bypass native User guards
 	# WITHOUT mutating global session state (which breaks the whitelist registry on hot-reload)
-	result = frappe.get_all(
-		"User",
-		filters={"name": email},
-		fields=fields,
-		limit=1,
-		ignore_permissions=True
-	)
+	result = frappe.get_all("User", filters={"name": email}, fields=fields, limit=1, ignore_permissions=True)
 	return result[0] if result else {}
 
 
@@ -91,20 +87,13 @@ def add_company_permission(email: str, company: str):
 	from frappe.permissions import add_user_permission
 
 	with sudo_as_administrator():
-		add_user_permission(
-			"Company", company, email,
-			ignore_permissions=True
-		)
+		add_user_permission("Company", company, email, ignore_permissions=True)
 
 
 def get_user_company(email: str) -> str | None:
 	# FIX: Use get_all with ignore_permissions=True to safely bypass native User guards
 	result = frappe.get_all(
-		"User",
-		filters={"name": email},
-		fields=["bp_company"],
-		limit=1,
-		ignore_permissions=True
+		"User", filters={"name": email}, fields=["bp_company"], limit=1, ignore_permissions=True
 	)
 	company = result[0].get("bp_company") if result else None
 
@@ -114,7 +103,7 @@ def get_user_company(email: str) -> str | None:
 			filters={"user": email, "allow": "Company"},
 			fields=["for_value"],
 			limit=1,
-			ignore_permissions=True
+			ignore_permissions=True,
 		)
 		company = perm_result[0].get("for_value") if perm_result else None
 
