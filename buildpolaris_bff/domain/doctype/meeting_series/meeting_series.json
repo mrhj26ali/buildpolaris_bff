@@ -1,0 +1,28 @@
+{
+ "actions": [],
+ "creation": "2026-08-08 10:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": ["project", "title", "frequency", "last_sequence_number"],
+ "fields": [
+  {"fieldname": "project", "fieldtype": "Link", "in_list_view": 1, "label": "Project", "options": "Project", "reqd": 1},
+  {"fieldname": "title", "fieldtype": "Data", "in_list_view": 1, "label": "Title", "reqd": 1},
+  {"fieldname": "frequency", "fieldtype": "Select", "label": "Frequency", "options": "Weekly\nBi-Weekly\nMonthly\nAd-Hoc"},
+  {"fieldname": "last_sequence_number", "fieldtype": "Int", "label": "Last Sequence Number", "default": "0"}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-08 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Domain",
+ "name": "Meeting Series",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "read": 1, "role": "System Manager", "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

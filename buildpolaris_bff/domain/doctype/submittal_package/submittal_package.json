@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "autoname": "format:SUB-{project}-{####}",
+ "creation": "2026-08-08 10:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project",
+  "spec_section",
+  "revision_number",
+  "prior_package",
+  "column_break_1",
+  "status",
+  "ball_in_court",
+  "linked_task",
+  "required_by_date",
+  "section_break_items",
+  "items"
+ ],
+ "fields": [
+  {"fieldname": "project", "fieldtype": "Link", "in_list_view": 1, "label": "Project", "options": "Project", "reqd": 1},
+  {"fieldname": "spec_section", "fieldtype": "Data", "in_list_view": 1, "label": "Spec Section", "reqd": 1},
+  {"fieldname": "revision_number", "fieldtype": "Int", "label": "Revision Number", "default": "1"},
+  {"fieldname": "prior_package", "fieldtype": "Link", "label": "Prior Package", "options": "Submittal Package"},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "status", "fieldtype": "Select", "in_list_view": 1, "label": "Status", "options": "Draft\nIn Review\nRevision Required\nApproved\nRejected", "default": "Draft"},
+  {"fieldname": "ball_in_court", "fieldtype": "Data", "label": "Ball In Court", "read_only": 1},
+  {"fieldname": "linked_task", "fieldtype": "Link", "label": "Linked Task", "options": "Task"},
+  {"fieldname": "required_by_date", "fieldtype": "Date", "label": "Required By Date"},
+  {"fieldname": "section_break_items", "fieldtype": "Section Break", "label": "Line Items"},
+  {"fieldname": "items", "fieldtype": "Table", "label": "Items", "options": "Submittal Item"}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-08 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Domain",
+ "name": "Submittal Package",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

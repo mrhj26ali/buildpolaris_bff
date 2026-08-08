@@ -1,0 +1,33 @@
+{
+ "actions": [],
+ "creation": "2026-08-08 10:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_doctype",
+  "reference_name",
+  "escalation_tier",
+  "escalated_at"
+ ],
+ "fields": [
+  {"fieldname": "reference_doctype", "fieldtype": "Select", "in_list_view": 1, "label": "Reference Type", "options": "RFI\nSubmittal Package\nAction Item", "reqd": 1},
+  {"fieldname": "reference_name", "fieldtype": "Dynamic Link", "in_list_view": 1, "label": "Reference", "options": "reference_doctype", "reqd": 1},
+  {"fieldname": "escalation_tier", "fieldtype": "Int", "in_list_view": 1, "label": "Escalation Tier", "default": "0"},
+  {"fieldname": "escalated_at", "fieldtype": "Datetime", "label": "Escalated At", "default": "Now"}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-08 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Domain",
+ "name": "Escalation Log",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "read": 1, "role": "System Manager", "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
