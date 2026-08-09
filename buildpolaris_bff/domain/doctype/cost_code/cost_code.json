@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "autoname": "format:CC-{project}-{####}",
+ "creation": "2026-08-09 10:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project",
+  "code",
+  "title",
+  "column_break_1",
+  "parent_cost_code",
+  "original_budget",
+  "revised_budget",
+  "section_break_tracking",
+  "committed_amount",
+  "spent_to_date",
+  "projected_final",
+  "variance"
+ ],
+ "fields": [
+  {"fieldname": "project", "fieldtype": "Link", "in_list_view": 1, "label": "Project", "options": "Project", "reqd": 1},
+  {"fieldname": "code", "fieldtype": "Data", "in_list_view": 1, "label": "Cost Code", "reqd": 1, "description": "MasterFormat/UniFormat code"},
+  {"fieldname": "title", "fieldtype": "Data", "in_list_view": 1, "label": "Title", "reqd": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "parent_cost_code", "fieldtype": "Link", "label": "Parent Cost Code", "options": "Cost Code"},
+  {"fieldname": "original_budget", "fieldtype": "Currency", "label": "Original Budget", "default": "0"},
+  {"fieldname": "revised_budget", "fieldtype": "Currency", "label": "Revised Budget", "default": "0"},
+  {"fieldname": "section_break_tracking", "fieldtype": "Section Break", "label": "Cost Tracking"},
+  {"fieldname": "committed_amount", "fieldtype": "Currency", "label": "Committed Amount", "read_only": 1, "default": "0"},
+  {"fieldname": "spent_to_date", "fieldtype": "Currency", "label": "Spent To Date", "read_only": 1, "default": "0"},
+  {"fieldname": "projected_final", "fieldtype": "Currency", "label": "Projected Final Cost", "read_only": 1, "default": "0"},
+  {"fieldname": "variance", "fieldtype": "Currency", "label": "Variance", "read_only": 1, "default": "0"}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-09 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Domain",
+ "name": "Cost Code",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
