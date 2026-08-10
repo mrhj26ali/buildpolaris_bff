@@ -1,0 +1,56 @@
+{
+    "actions": [],
+    "creation": "2026-08-08 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "file_url",
+        "caption",
+        "gps_lat",
+        "gps_lng",
+        "captured_at"
+    ],
+    "fields": [
+        {
+            "fieldname": "file_url",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "File URL",
+            "reqd": 1
+        },
+        {
+            "fieldname": "caption",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Caption"
+        },
+        {
+            "fieldname": "gps_lat",
+            "fieldtype": "Float",
+            "label": "GPS Latitude",
+            "precision": "6"
+        },
+        {
+            "fieldname": "gps_lng",
+            "fieldtype": "Float",
+            "label": "GPS Longitude",
+            "precision": "6"
+        },
+        {
+            "fieldname": "captured_at",
+            "fieldtype": "Datetime",
+            "label": "Captured At"
+        }
+    ],
+    "istable": 1,
+    "links": [],
+    "modified": "2026-08-08 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Field Execution",
+    "name": "Daily Log Photo",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

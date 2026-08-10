@@ -2,7 +2,6 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 ADMIN_ROLE_NAME = "BuildPolaris Admin"
-# FR-1.8 — Role Catalog (single source of truth, code-first)
 PLATFORM_ROLES = [
 	{
 		"role": "BuildPolaris Admin",
@@ -77,7 +76,8 @@ def create_platform_roles():
 
 
 def create_bp_custom_fields():
-	# FR-1.1/FR-1.2 — activation & invite tokens on native User (🟡 Extended Native)
+	#Add BuildPolaris-specific fields to the native User DocType 
+    # (Activation tokens, invite status, company linkage
 	create_custom_fields(
 		{
 			"User": [
@@ -127,7 +127,6 @@ def create_bp_custom_fields():
 
 
 def enable_versioning():
-	# FR-1.6 — immutable audit trail on core identity records (survives migrations)
 	from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
 	for doctype in ("User", "Company"):

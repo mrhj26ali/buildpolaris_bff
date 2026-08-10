@@ -1,0 +1,116 @@
+{
+    "actions": [],
+    "autoname": "format:ANN-{#####}",
+    "creation": "2026-08-09 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "revision",
+        "project",
+        "author",
+        "annotation_type",
+        "column_break_1",
+        "sync_status",
+        "linked_rfi",
+        "linked_punch_item",
+        "section_break_content",
+        "geometry",
+        "comment"
+    ],
+    "fields": [
+        {
+            "fieldname": "revision",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Drawing Revision",
+            "options": "Drawing Revision",
+            "reqd": 1
+        },
+        {
+            "fieldname": "project",
+            "fieldtype": "Link",
+            "label": "Project",
+            "options": "Project",
+            "reqd": 1
+        },
+        {
+            "fieldname": "author",
+            "fieldtype": "Link",
+            "label": "Author",
+            "options": "User"
+        },
+        {
+            "fieldname": "annotation_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Type",
+            "options": "Cloud\nPin\nText",
+            "default": "Pin"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "sync_status",
+            "fieldtype": "Select",
+            "label": "Sync Status",
+            "options": "Local\nSynced",
+            "default": "Synced"
+        },
+        {
+            "fieldname": "linked_rfi",
+            "fieldtype": "Link",
+            "label": "Linked RFI",
+            "options": "RFI"
+        },
+        {
+            "fieldname": "linked_punch_item",
+            "fieldtype": "Link",
+            "label": "Linked Punch Item",
+            "options": "Punch List Item"
+        },
+        {
+            "fieldname": "section_break_content",
+            "fieldtype": "Section Break",
+            "label": "Content"
+        },
+        {
+            "fieldname": "geometry",
+            "fieldtype": "Code",
+            "label": "Geometry (JSON)",
+            "options": "JSON"
+        },
+        {
+            "fieldname": "comment",
+            "fieldtype": "Text",
+            "label": "Comment"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-08-09 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Document Control",
+    "name": "Drawing Annotation",
+    "naming_rule": "Expression (old style)",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

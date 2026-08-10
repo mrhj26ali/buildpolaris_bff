@@ -1,0 +1,77 @@
+{
+    "actions": [],
+    "creation": "2026-08-09 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "cost_code",
+        "description",
+        "scheduled_value",
+        "previous_completed",
+        "current_completed",
+        "total_completed",
+        "retainage"
+    ],
+    "fields": [
+        {
+            "fieldname": "cost_code",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Cost Code",
+            "options": "Cost Code"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Description"
+        },
+        {
+            "fieldname": "scheduled_value",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Scheduled Value",
+            "default": "0"
+        },
+        {
+            "fieldname": "previous_completed",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Previously Completed",
+            "default": "0"
+        },
+        {
+            "fieldname": "current_completed",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Current Period",
+            "default": "0"
+        },
+        {
+            "fieldname": "total_completed",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Total To Date",
+            "read_only": 1,
+            "default": "0"
+        },
+        {
+            "fieldname": "retainage",
+            "fieldtype": "Currency",
+            "label": "Retainage",
+            "read_only": 1,
+            "default": "0"
+        }
+    ],
+    "istable": 1,
+    "links": [],
+    "modified": "2026-08-09 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Financials",
+    "name": "Pay Application Line",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}
