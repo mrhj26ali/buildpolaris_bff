@@ -1,0 +1,157 @@
+{
+    "actions": [],
+    "autoname": "format:REV-{#####}",
+    "creation": "2026-08-09 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "drawing",
+        "project",
+        "revision_code",
+        "column_break_1",
+        "status",
+        "status_code",
+        "section_break_files",
+        "native_file",
+        "rendition_file",
+        "section_break_lifecycle",
+        "uploaded_by",
+        "uploaded_at",
+        "column_break_2",
+        "authorized_by",
+        "authorized_at",
+        "section_break_notes",
+        "notes"
+    ],
+    "fields": [
+        {
+            "fieldname": "drawing",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Drawing",
+            "options": "Drawing",
+            "reqd": 1
+        },
+        {
+            "fieldname": "project",
+            "fieldtype": "Link",
+            "label": "Project",
+            "options": "Project",
+            "reqd": 1
+        },
+        {
+            "fieldname": "revision_code",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Revision Code",
+            "reqd": 1,
+            "description": "e.g. A, B, C, S0"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "WIP\nShared\nPublished\nArchived",
+            "default": "WIP"
+        },
+        {
+            "fieldname": "status_code",
+            "fieldtype": "Select",
+            "label": "Status Code (ISO 19650)",
+            "options": "S0\nS1\nS2",
+            "default": "S0",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_files",
+            "fieldtype": "Section Break",
+            "label": "Files (FR-5: Native + Rendition)"
+        },
+        {
+            "fieldname": "native_file",
+            "fieldtype": "Data",
+            "label": "Native File URL",
+            "description": "DWG, RVT, etc."
+        },
+        {
+            "fieldname": "rendition_file",
+            "fieldtype": "Data",
+            "label": "PDF Rendition URL",
+            "description": "Browser-viewable PDF"
+        },
+        {
+            "fieldname": "section_break_lifecycle",
+            "fieldtype": "Section Break",
+            "label": "Lifecycle"
+        },
+        {
+            "fieldname": "uploaded_by",
+            "fieldtype": "Link",
+            "label": "Uploaded By",
+            "options": "User"
+        },
+        {
+            "fieldname": "uploaded_at",
+            "fieldtype": "Datetime",
+            "label": "Uploaded At"
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "authorized_by",
+            "fieldtype": "Link",
+            "label": "Authorized By",
+            "options": "User",
+            "read_only": 1
+        },
+        {
+            "fieldname": "authorized_at",
+            "fieldtype": "Datetime",
+            "label": "Authorized At",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_notes",
+            "fieldtype": "Section Break",
+            "label": "Notes"
+        },
+        {
+            "fieldname": "notes",
+            "fieldtype": "Text Editor",
+            "label": "Revision Notes"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-08-09 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Document Control",
+    "name": "Drawing Revision",
+    "naming_rule": "Expression (old style)",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

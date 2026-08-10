@@ -1,0 +1,81 @@
+{
+    "actions": [],
+    "creation": "2026-08-08 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "series",
+        "sequence_number",
+        "meeting_date",
+        "column_break_1",
+        "status",
+        "section_break_content",
+        "notes"
+    ],
+    "fields": [
+        {
+            "fieldname": "series",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Meeting Series",
+            "options": "Meeting Series",
+            "reqd": 1
+        },
+        {
+            "fieldname": "sequence_number",
+            "fieldtype": "Int",
+            "in_list_view": 1,
+            "label": "Sequence Number",
+            "read_only": 1
+        },
+        {
+            "fieldname": "meeting_date",
+            "fieldtype": "Date",
+            "in_list_view": 1,
+            "label": "Meeting Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Draft\nPublished",
+            "default": "Draft"
+        },
+        {
+            "fieldname": "section_break_content",
+            "fieldtype": "Section Break",
+            "label": "Content"
+        },
+        {
+            "fieldname": "notes",
+            "fieldtype": "Text Editor",
+            "label": "Minutes Notes"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-08-08 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Communications",
+    "name": "Meeting Minutes",
+    "naming_rule": "Autoincrement",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "System Manager",
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

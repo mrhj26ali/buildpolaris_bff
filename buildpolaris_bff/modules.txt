@@ -1,1 +1,7 @@
-Domain
+Identity
+Communications
+Document Control
+Field Execution
+Financials
+Project Closeout
+Scheduling

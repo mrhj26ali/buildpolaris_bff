@@ -1,0 +1,185 @@
+{
+    "actions": [],
+    "autoname": "format:SAF-{project}-{####}",
+    "creation": "2026-08-08 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "project",
+        "incident_date",
+        "incident_type",
+        "severity",
+        "column_break_1",
+        "status",
+        "reported_by",
+        "location",
+        "section_break_parties",
+        "injured_party",
+        "employer",
+        "section_break_osha",
+        "osha_recordable",
+        "days_away",
+        "days_restricted",
+        "section_break_details",
+        "description",
+        "root_cause",
+        "corrective_action",
+        "section_break_evidence",
+        "photo_url",
+        "witness_statements"
+    ],
+    "fields": [
+        {
+            "fieldname": "project",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Project",
+            "options": "Project",
+            "reqd": 1
+        },
+        {
+            "fieldname": "incident_date",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Incident Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "incident_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Incident Type",
+            "options": "Near Miss\nFirst Aid\nRecordable\nLost Time\nFatality",
+            "reqd": 1
+        },
+        {
+            "fieldname": "severity",
+            "fieldtype": "Select",
+            "label": "Severity",
+            "options": "Low\nModerate\nSerious\nCritical\nFatal",
+            "default": "Low"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nReported\nUnder Investigation\nClosed",
+            "default": "Draft"
+        },
+        {
+            "fieldname": "reported_by",
+            "fieldtype": "Link",
+            "label": "Reported By",
+            "options": "User"
+        },
+        {
+            "fieldname": "location",
+            "fieldtype": "Data",
+            "label": "Incident Location"
+        },
+        {
+            "fieldname": "section_break_parties",
+            "fieldtype": "Section Break",
+            "label": "Involved Parties"
+        },
+        {
+            "fieldname": "injured_party",
+            "fieldtype": "Data",
+            "label": "Injured Party"
+        },
+        {
+            "fieldname": "employer",
+            "fieldtype": "Data",
+            "label": "Employer"
+        },
+        {
+            "fieldname": "section_break_osha",
+            "fieldtype": "Section Break",
+            "label": "OSHA Recordkeeping"
+        },
+        {
+            "fieldname": "osha_recordable",
+            "fieldtype": "Check",
+            "label": "OSHA Recordable",
+            "default": "0"
+        },
+        {
+            "fieldname": "days_away",
+            "fieldtype": "Int",
+            "label": "Days Away From Work",
+            "default": "0"
+        },
+        {
+            "fieldname": "days_restricted",
+            "fieldtype": "Int",
+            "label": "Days Restricted/Transferred",
+            "default": "0"
+        },
+        {
+            "fieldname": "section_break_details",
+            "fieldtype": "Section Break",
+            "label": "Incident Details"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text Editor",
+            "label": "Description"
+        },
+        {
+            "fieldname": "root_cause",
+            "fieldtype": "Text Editor",
+            "label": "Root Cause Analysis"
+        },
+        {
+            "fieldname": "corrective_action",
+            "fieldtype": "Text Editor",
+            "label": "Corrective Action"
+        },
+        {
+            "fieldname": "section_break_evidence",
+            "fieldtype": "Section Break",
+            "label": "Evidence"
+        },
+        {
+            "fieldname": "photo_url",
+            "fieldtype": "Data",
+            "label": "Photo URL"
+        },
+        {
+            "fieldname": "witness_statements",
+            "fieldtype": "Text Editor",
+            "label": "Witness Statements"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-08-08 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Field Execution",
+    "name": "Safety Incident",
+    "naming_rule": "Expression (old style)",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

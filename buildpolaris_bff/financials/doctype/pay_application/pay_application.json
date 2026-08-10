@@ -1,0 +1,151 @@
+{
+    "actions": [],
+    "autoname": "format:PAY-{project}-{####}",
+    "creation": "2026-08-09 10:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "project",
+        "commitment",
+        "application_number",
+        "column_break_1",
+        "status",
+        "period_start",
+        "period_end",
+        "section_break_totals",
+        "total_completed",
+        "retainage_percent",
+        "retainage_amount",
+        "column_break_2",
+        "previous_retainage_held",
+        "net_due",
+        "section_break_lines",
+        "lines"
+    ],
+    "fields": [
+        {
+            "fieldname": "project",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Project",
+            "options": "Project",
+            "reqd": 1
+        },
+        {
+            "fieldname": "commitment",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Commitment",
+            "options": "Commitment",
+            "reqd": 1
+        },
+        {
+            "fieldname": "application_number",
+            "fieldtype": "Int",
+            "label": "Application #",
+            "default": "1"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nSubmitted\nApproved\nRejected",
+            "default": "Draft"
+        },
+        {
+            "fieldname": "period_start",
+            "fieldtype": "Date",
+            "label": "Period Start"
+        },
+        {
+            "fieldname": "period_end",
+            "fieldtype": "Date",
+            "label": "Period End"
+        },
+        {
+            "fieldname": "section_break_totals",
+            "fieldtype": "Section Break",
+            "label": "Totals"
+        },
+        {
+            "fieldname": "total_completed",
+            "fieldtype": "Currency",
+            "label": "Total Completed To Date",
+            "read_only": 1,
+            "default": "0"
+        },
+        {
+            "fieldname": "retainage_percent",
+            "fieldtype": "Percent",
+            "label": "Retainage %",
+            "default": "10"
+        },
+        {
+            "fieldname": "retainage_amount",
+            "fieldtype": "Currency",
+            "label": "Retainage Amount",
+            "read_only": 1,
+            "default": "0"
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "previous_retainage_held",
+            "fieldtype": "Currency",
+            "label": "Previous Retainage Held",
+            "read_only": 1,
+            "default": "0"
+        },
+        {
+            "fieldname": "net_due",
+            "fieldtype": "Currency",
+            "label": "Net Due This Application",
+            "read_only": 1,
+            "default": "0"
+        },
+        {
+            "fieldname": "section_break_lines",
+            "fieldtype": "Section Break",
+            "label": "Schedule of Values"
+        },
+        {
+            "fieldname": "lines",
+            "fieldtype": "Table",
+            "label": "Pay Application Lines",
+            "options": "Pay Application Line"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-08-09 10:00:00",
+    "modified_by": "Administrator",
+    "module": "Financials",
+    "name": "Pay Application",
+    "naming_rule": "Expression (old style)",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}
