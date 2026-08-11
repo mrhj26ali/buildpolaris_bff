@@ -1,3 +1,7 @@
+# SECURITY: The sync engine uses ignore_permissions=True for document
+# writes because it operates as a trusted backend service. All mutations
+# are pre-authorized at the BFF API layer via require_project_access
+# before reaching this module. See NFR-SEC.2 in the requirements doc.
 import frappe
 from datetime import datetime
 
