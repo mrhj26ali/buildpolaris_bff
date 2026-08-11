@@ -1,3 +1,8 @@
+# SECURITY: The sudo_as_administrator context manager in this module
+# is the controlled permission escalation boundary. It is only invoked
+# from service functions whose callers have already passed explicit
+# authorization checks at the BFF API layer (require_project_access,
+# require_roles). See NFR-SEC.2 in the requirements doc.
 from contextlib import contextmanager
 
 import frappe

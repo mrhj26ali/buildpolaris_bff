@@ -1,3 +1,7 @@
+# SECURITY: This repository module uses ignore_permissions=True in
+# controlled contexts. Permission enforcement is handled at the
+# BFF API layer via require_project_access guards before service
+# calls reach this module. See NFR-SEC.2 in the requirements doc.
 import frappe
 from frappe import _
 from frappe.query_builder import DocType
