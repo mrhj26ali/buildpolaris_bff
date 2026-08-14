@@ -117,8 +117,6 @@ buildpolaris_bff/
 │   │                              #   — each a thin wrapper around the SAME services/ function a human screen calls
 │   └── doctype/                  # ai_document_index, agent_action_approval, agent_mutation_log,
 │                                  #   copilot_thread, copilot_message
-│
-└── (tests/ and docs/ omitted above — scaffolded automatically by `bench new-app`)
 ```
 
 **Why this shape, briefly:** every module is `api.py → services/ → doctype/`, always in that order — so "which module owns this" and "which folder does this code belong in" are always the same question. `ai_copilot/` is the one module that's structurally different: it's the only place the platform talks to the AI sidecar, and it's the only module that hosts an MCP server rather than just a REST `api.py`.
