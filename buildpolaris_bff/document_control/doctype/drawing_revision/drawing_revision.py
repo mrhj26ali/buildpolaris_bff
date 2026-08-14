@@ -1,22 +1,24 @@
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime
 
 
 class DrawingRevision(Document):
-    def validate(self):
-        # Auto-sync status_code with status
-        status_code_map = {
-            "WIP": "S0",
-            "Shared": "S1",
-            "Published": "S2",
-            "Archived": "S2",
-        }
-        if self.status in status_code_map:
-            self.status_code = status_code_map[self.status]
+	def validate(self):
+		self._guard_is_current()
 
-    def before_save(self):
-        if not self.uploaded_by:
-            self.uploaded_by = frappe.session.user
-        if not self.uploaded_at:
-            self.uploaded_at = now_datetime()
+	def _guard_is_current(self):
+		"""FR-5.2: only the promotion endpoint may set is_current=1 - never
+		a general update, enforced here so even a direct .save() can't
+		bypass it ('enforced server-side, never a display-layer flag
+		alone')."""
+		if not self.is_current:
+			return
+		if self.flags.get("via_promotion"):
+			return
+		doc_before = self.get_doc_before_save()
+		was_current = doc_before.is_current if doc_before else 0
+		if not was_current:
+			frappe.throw(
+				"is_current can only be set via the revision-promotion "
+				"endpoint (FR-5.2), never a direct field update."
+			)

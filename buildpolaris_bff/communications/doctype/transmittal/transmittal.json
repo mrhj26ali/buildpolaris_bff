@@ -1,116 +1,38 @@
 {
  "actions": [],
- "autoname": "format:TRN-{project}-{####}",
- "creation": "2026-08-08 10:00:00",
+ "autoname": "naming_series:",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "project",
-  "purpose",
-  "transmission_method",
-  "content_types",
-  "section_break_recipients",
-  "recipients"
+  "naming_series", "project", "sent_by", "sent_at", "method",
+  "section_break_recipients", "recipients", "section_break_documents", "documents"
  ],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "purpose",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Purpose",
-   "reqd": 1
-  },
-  {
-   "fieldname": "transmission_method",
-   "fieldtype": "Select",
-   "label": "Transmission Method",
-   "options": "Email\nPhysical\nDigital Portal\nOther"
-  },
-  {
-   "fieldname": "content_types",
-   "fieldtype": "Small Text",
-   "label": "Content Types"
-  },
-  {
-   "fieldname": "section_break_recipients",
-   "fieldtype": "Section Break",
-   "label": "Recipients"
-  },
-  {
-   "fieldname": "recipients",
-   "fieldtype": "Table",
-   "label": "Recipients",
-   "options": "Transmittal Recipient"
-  }
+  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "TX-.YYYY.-.#####", "hidden": 1},
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "sent_by", "fieldtype": "Link", "label": "Sent By", "options": "User", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "sent_at", "fieldtype": "Datetime", "label": "Sent At", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "method", "fieldtype": "Data", "label": "Method", "in_list_view": 1},
+  {"fieldname": "section_break_recipients", "fieldtype": "Section Break", "label": "Recipients"},
+  {"fieldname": "recipients", "fieldtype": "Table", "label": "Recipients", "options": "Transmittal Recipient"},
+  {"fieldname": "section_break_documents", "fieldtype": "Section Break", "label": "Documents"},
+  {"fieldname": "documents", "fieldtype": "Table", "label": "Documents", "options": "Transmittal Document"}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Communications",
  "name": "Transmittal",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Project Manager",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Document Controller",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Document Controller", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

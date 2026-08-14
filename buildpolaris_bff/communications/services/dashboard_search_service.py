@@ -1,47 +1,48 @@
+"""FR-4.6: RFIs, Submittals, Transmittals, Action Items filterable and
+searchable by Project, status, and assignee from one unified dashboard."""
 import frappe
-from frappe.utils import today
+
+from buildpolaris_bff.shared.permissions import assert_project_permission
 
 
-def get_dashboard(project: str) -> dict:
-    """
-    FR-4.7: Unified dashboard aggregating all communications doctypes.
-    Defensive: handles missing doctypes gracefully.
-    """
-    def safe_count(doctype, filters):
-        try:
-            if frappe.db.exists("DocType", doctype):
-                return frappe.db.count(doctype, filters)
-        except Exception:
-            pass
-        return 0
+def search_communications(project, status=None, assignee=None, user=None):
+	assert_project_permission(project, ptype="read", user=user)
+	return {
+		"rfis": _search_rfis(project, status, assignee),
+		"submittals": _search_submittals(project, status),
+		"transmittals": _search_transmittals(project),
+		"action_items": _search_action_items(project, status, assignee),
+	}
 
-    rfi_count = safe_count("RFI", {"project": project})
-    rfi_overdue = safe_count("RFI", {
-        "project": project,
-        "status": ["!=", "Closed"],
-        "date_required": ["<", today()],
-    })
 
-    submittal_count = safe_count("Submittal Package", {"project": project})
-    transmittal_count = safe_count("Transmittal", {"project": project})
+def _search_rfis(project, status, assignee):
+	filters = {"project": project}
+	if status:
+		filters["status"] = status
+	if assignee:
+		filters["assigned_to"] = assignee
+	return frappe.get_all("RFI", filters=filters,
+	                       fields=["name", "subject", "status", "assigned_to", "due_date"])
 
-    action_item_count = safe_count("Action Item", {"project": project})
-    action_item_overdue = safe_count("Action Item", {
-        "project": project,
-        "status": ["!=", "Closed"],
-        "due_date": ["<", today()],
-    })
 
-    escalation_count = safe_count("Escalation Log", {"project": project})
+def _search_submittals(project, status):
+	filters = {"project": project}
+	if status:
+		filters["status"] = status
+	return frappe.get_all("Submittal Package", filters=filters,
+	                       fields=["name", "spec_section", "status"])
 
-    return {
-        "project": project,
-        "rfi_count": rfi_count,
-        "rfi_overdue": rfi_overdue,
-        "submittal_count": submittal_count,
-        "transmittal_count": transmittal_count,
-        "action_item_count": action_item_count,
-        "action_item_overdue": action_item_overdue,
-        "escalation_count": escalation_count,
-        "total_overdue": rfi_overdue + action_item_overdue,
-    }
+
+def _search_transmittals(project):
+	return frappe.get_all("Transmittal", filters={"project": project},
+	                       fields=["name", "sent_by", "sent_at", "method"])
+
+
+def _search_action_items(project, status, assignee):
+	filters = {"project": project}
+	if status:
+		filters["status"] = status
+	if assignee:
+		filters["assignee"] = assignee
+	return frappe.get_all("Action Item", filters=filters,
+	                       fields=["name", "description", "assignee", "due_date", "status"])

@@ -1,38 +1,67 @@
+"""FR-4.2: Submittal Packages with individual line items, tracked through
+a review workflow."""
 import frappe
-from frappe.utils import now_datetime
-from frappe.utils import now_datetime
 
-def create_submittal(project: str, spec_section: str, items: list,
-                     linked_task: str = None, required_by_date: str = None):
-    """FR-4: Create a new Submittal Package with line items."""
-    package = frappe.get_doc({
-        "doctype": "Submittal Package",
-        "project": project,
-        "spec_section": spec_section,
-        "linked_task": linked_task,
-        "required_by_date": required_by_date,
-        "status": "Draft",
-        "items": items,
-    }).insert(ignore_permissions=True)
-    return package.name
+from buildpolaris_bff.shared.exceptions import ValidationError
+from buildpolaris_bff.shared.permissions import assert_project_permission
 
 
+def create_submittal(project, spec_section, lines, created_by=None):
+	"""lines: [{description}]"""
+	created_by = created_by or frappe.session.user
+	assert_project_permission(project, ptype="write", user=created_by)
 
-def resubmit_package(prior_package_id: str, notes: str = None):
-    """FR-6: Create a new revision cycle referencing the prior package."""
-    prior = frappe.get_doc("Submittal Package", prior_package_id)
-    new_package = frappe.get_doc({
-        "doctype": "Submittal Package",
-        "project": prior.project,
-        "spec_section": prior.spec_section,
-        "revision_number": prior.revision_number + 1,
-        "prior_package": prior.name,
-        "linked_task": prior.linked_task,
-        "required_by_date": prior.required_by_date,
-        "status": "Draft",
-        "items": prior.items,
-    }).insert(ignore_permissions=True)
-    return new_package.name
+	if not lines:
+		raise ValidationError("A Submittal Package requires at least one line item.")
+
+	doc = frappe.get_doc({
+		"doctype": "Submittal Package",
+		"naming_series": "SUB-.YYYY.-.#####",
+		"project": project,
+		"spec_section": spec_section,
+		"status": "Submitted",
+	})
+	for line in lines:
+		doc.append("lines", {"description": line.get("description"), "status": "Pending"})
+	doc.insert()
+	return doc.as_dict()
 
 
+def review_line(submittal: str, line_name: str, status: str, reviewer: str | None = None):
+	"""status: Approved | Revise | Rejected."""
+	reviewer = reviewer or frappe.session.user
+	doc = frappe.get_doc("Submittal Package", submittal)
+	assert_project_permission(doc.project, ptype="write", user=reviewer)
 
+	valid_statuses = {"Pending", "Approved", "Revise", "Rejected"}
+	if status not in valid_statuses:
+		raise ValidationError(f"status must be one of {valid_statuses}.")
+
+	line = next((l for l in doc.lines if l.name == line_name), None)
+	if not line:
+		raise ValidationError(f"Line item {line_name} not found on this Submittal Package.")
+
+	line.status = status
+	line.reviewer = reviewer
+	_recompute_package_status(doc)
+	doc.save()
+	return doc.as_dict()
+
+
+def _recompute_package_status(doc):
+	statuses = {l.status for l in doc.lines}
+	if statuses == {"Approved"}:
+		doc.status = "Approved"
+	elif "Rejected" in statuses:
+		doc.status = "Rejected"
+	elif "Revise" in statuses:
+		doc.status = "ResubmitRequested"
+	elif "Pending" in statuses and len(statuses) > 1:
+		doc.status = "UnderReview"
+	# all-Pending stays "Submitted"
+
+
+def list_submittals(project: str, user: str | None = None):
+	assert_project_permission(project, ptype="read", user=user)
+	return frappe.get_all("Submittal Package", filters={"project": project},
+	                       fields=["name", "spec_section", "status"])

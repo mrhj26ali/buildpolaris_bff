@@ -1,43 +1,28 @@
 {
-    "actions": [],
-    "creation": "2026-08-08 10:00:00",
-    "doctype": "DocType",
-    "engine": "InnoDB",
-    "field_order": [
-        "item_name",
-        "disposition_code",
-        "notes"
-    ],
-    "fields": [
-        {
-            "fieldname": "item_name",
-            "fieldtype": "Data",
-            "in_list_view": 1,
-            "label": "Item Name",
-            "reqd": 1
-        },
-        {
-            "fieldname": "disposition_code",
-            "fieldtype": "Select",
-            "in_list_view": 1,
-            "label": "Disposition",
-            "options": "\nApproved\nApproved as Noted\nApproved as Noted (Resubmission Not Required)\nRevise and Resubmit\nRejected\nFor Record Only"
-        },
-        {
-            "fieldname": "notes",
-            "fieldtype": "Small Text",
-            "label": "Notes"
-        }
-    ],
-    "istable": 1,
-    "links": [],
-    "modified": "2026-08-08 10:00:00",
-    "modified_by": "Administrator",
-    "module": "Communications",
-    "name": "Submittal Item",
-    "owner": "Administrator",
-    "permissions": [],
-    "sort_field": "modified",
-    "sort_order": "DESC",
-    "states": []
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-08-13 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "istable": 1,
+ "field_order": ["description", "status", "reviewer"],
+ "fields": [
+  {"fieldname": "description", "fieldtype": "Data", "label": "Description", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Pending\nApproved\nRevise\nRejected", "default": "Pending", "in_list_view": 1},
+  {"fieldname": "reviewer", "fieldtype": "Link", "label": "Reviewer", "options": "User", "in_list_view": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-13 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Communications",
+ "name": "Submittal Line Item",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
 }
