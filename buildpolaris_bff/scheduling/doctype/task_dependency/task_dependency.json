@@ -1,142 +1,32 @@
 {
  "actions": [],
- "allow_rename": 1,
- "creation": "2026-08-08 10:00:00",
+ "autoname": "hash",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": [
-  "project",
-  "predecessor_task",
-  "successor_task",
-  "type",
-  "lag_days"
- ],
+ "field_order": ["project", "predecessor", "successor", "column_break_1", "type", "lag_days"],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "predecessor_task",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Predecessor Task",
-   "options": "Task",
-   "reqd": 1
-  },
-  {
-   "fieldname": "successor_task",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Successor Task",
-   "options": "Task",
-   "reqd": 1
-  },
-  {
-   "fieldname": "type",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Type",
-   "options": "FS\nSS\nFF\nSF",
-   "default": "FS",
-   "reqd": 1
-  },
-  {
-   "fieldname": "lag_days",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "Lag/Lead (Days)",
-   "default": "0"
-  }
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "predecessor", "fieldtype": "Link", "label": "Predecessor", "options": "Task", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "successor", "fieldtype": "Link", "label": "Successor", "options": "Task", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "type", "fieldtype": "Select", "label": "Type", "options": "FS\nSS\nFF\nSF", "default": "FS", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "lag_days", "fieldtype": "Int", "label": "Lag (Days)", "default": "0"}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Scheduling",
  "name": "Task Dependency",
- "naming_rule": "Autoincrement",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Project Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Accounting",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Document Controller",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Site Superintendent",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Subcontractor",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Site Superintendent", "read": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

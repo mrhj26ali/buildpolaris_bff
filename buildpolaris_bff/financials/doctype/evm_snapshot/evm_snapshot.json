@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-08-13 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project", "snapshot_date", "column_break_1", "planned_value", "earned_value",
+  "actual_cost", "section_break_indices", "cpi", "spi"
+ ],
+ "fields": [
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "snapshot_date", "fieldtype": "Date", "label": "Snapshot Date", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "planned_value", "fieldtype": "Currency", "label": "Planned Value"},
+  {"fieldname": "earned_value", "fieldtype": "Currency", "label": "Earned Value"},
+  {"fieldname": "actual_cost", "fieldtype": "Currency", "label": "Actual Cost"},
+  {"fieldname": "section_break_indices", "fieldtype": "Section Break", "label": "Indices"},
+  {"fieldname": "cpi", "fieldtype": "Float", "label": "CPI", "precision": "4"},
+  {"fieldname": "spi", "fieldtype": "Float", "label": "SPI", "precision": "4"}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-13 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Financials",
+ "name": "EVM Snapshot",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1},
+  {"role": "BuildPolaris Owner", "read": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

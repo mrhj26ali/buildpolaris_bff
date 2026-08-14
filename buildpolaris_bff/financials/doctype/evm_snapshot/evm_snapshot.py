@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class PayApplicationLine(Document):
+class EVMSnapshot(Document):
 	pass

@@ -1,119 +1,30 @@
 {
  "actions": [],
- "creation": "2026-08-08 10:00:00",
+ "autoname": "naming_series:",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": [
-  "project",
-  "label",
-  "captured_at",
-  "snapshots"
- ],
+ "field_order": ["naming_series", "project", "label", "captured_at", "section_break_snapshots", "snapshots"],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "label",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Baseline Label",
-   "reqd": 1
-  },
-  {
-   "fieldname": "captured_at",
-   "fieldtype": "Datetime",
-   "default": "Now",
-   "label": "Captured At",
-   "read_only": 1
-  },
-  {
-   "fieldname": "snapshots",
-   "fieldtype": "Table",
-   "label": "Activity Snapshots",
-   "options": "Baseline Activity Snapshot"
-  }
+  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "BASE-.YYYY.-.#####", "hidden": 1},
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "label", "fieldtype": "Data", "label": "Label", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "captured_at", "fieldtype": "Datetime", "label": "Captured At", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "section_break_snapshots", "fieldtype": "Section Break", "label": "Task Snapshots"},
+  {"fieldname": "snapshots", "fieldtype": "Table", "label": "Snapshots", "options": "Baseline Task Snapshot"}
  ],
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Scheduling",
  "name": "Schedule Baseline",
- "naming_rule": "Autoincrement",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Project Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Accounting",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Document Controller",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Site Superintendent",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Owner", "read": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
