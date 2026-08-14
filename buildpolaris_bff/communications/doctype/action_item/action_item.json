@@ -1,148 +1,38 @@
 {
  "actions": [],
- "autoname": "format:ACT-{project}-{####}",
- "creation": "2026-08-08 10:00:00",
+ "autoname": "naming_series:",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "project",
-  "subject",
-  "assigned_to",
-  "due_date",
-  "column_break_1",
-  "priority",
-  "status",
-  "minutes",
-  "section_break_details",
-  "description"
+  "naming_series", "project", "minutes", "description",
+  "column_break_1", "assignee", "due_date", "status"
  ],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "subject",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Subject",
-   "reqd": 1
-  },
-  {
-   "fieldname": "assigned_to",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Assigned To",
-   "options": "User"
-  },
-  {
-   "fieldname": "due_date",
-   "fieldtype": "Date",
-   "label": "Due Date"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "priority",
-   "fieldtype": "Select",
-   "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical",
-   "default": "Medium"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Open\nIn Progress\nClosed",
-   "default": "Open"
-  },
-  {
-   "fieldname": "minutes",
-   "fieldtype": "Link",
-   "label": "Meeting Minutes",
-   "options": "Meeting Minutes"
-  },
-  {
-   "fieldname": "section_break_details",
-   "fieldtype": "Section Break",
-   "label": "Details"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Text Editor",
-   "label": "Description"
-  }
+  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "AI-.YYYY.-.#####", "hidden": 1},
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "minutes", "fieldtype": "Link", "label": "Meeting Minutes", "options": "Meeting Minutes"},
+  {"fieldname": "description", "fieldtype": "Data", "label": "Description", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "assignee", "fieldtype": "Link", "label": "Assignee", "options": "User", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "due_date", "fieldtype": "Date", "label": "Due Date", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Open\nDone\nOverdue", "default": "Open", "in_list_view": 1}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Communications",
  "name": "Action Item",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Project Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Site Superintendent",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Document Controller", "read": 1},
+  {"role": "BuildPolaris Site Superintendent", "read": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

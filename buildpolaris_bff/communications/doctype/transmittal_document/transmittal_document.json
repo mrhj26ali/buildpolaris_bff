@@ -5,16 +5,16 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "istable": 1,
- "field_order": ["recipient"],
+ "field_order": ["file"],
  "fields": [
-  {"fieldname": "recipient", "fieldtype": "Data", "label": "Recipient", "reqd": 1, "in_list_view": 1}
+  {"fieldname": "file", "fieldtype": "Link", "label": "File", "options": "File", "reqd": 1, "in_list_view": 1}
  ],
  "index_web_pages_for_search": 0,
  "links": [],
  "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Communications",
- "name": "Transmittal Recipient",
+ "name": "Transmittal Document",
  "owner": "Administrator",
  "permissions": [
   {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}

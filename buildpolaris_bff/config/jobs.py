@@ -3,21 +3,17 @@ BuildPolaris scheduled jobs (wired in hooks.scheduler_events).
 Job failures MUST surface to an operator-visible channel (NFR-OBS.2).
 """
 import frappe
-from frappe.utils import today
 
 
 def escalate_overdue_communications():
-	"""
-	UC-4.5 / FR-4.5: escalate overdue RFIs and Action Items via the existing
-	notification engine. Runs daily.
+	"""FR-4.5: escalate overdue RFIs and Action Items via the native
+	ToDo/notification engine. Runs daily."""
+	from buildpolaris_bff.communications.services.escalation_service import escalate_overdue_items
 
-	NOTE: pending the Communications phase - 'Escalation Log' as referenced
-	in the pre-refactor draft was removed in the ARCH v2.1 refactor (FR-4.5
-	uses native ToDo/notification engine, not a bespoke doctype). This
-	function body is replaced when communications/services/escalation_service.py
-	lands.
-	"""
-	pass
+	try:
+		escalate_overdue_items()
+	except Exception:
+		frappe.log_error(title="Daily escalation job failed", message=frappe.get_traceback())
 
 
 def closeout_lookahead_digest():

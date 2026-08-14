@@ -1,236 +1,43 @@
 {
  "actions": [],
- "autoname": "format:RFI-{project}-{####}",
- "creation": "2026-08-08 10:00:00",
+ "autoname": "naming_series:",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "project",
-  "rfi_number",
-  "subject",
-  "description",
-  "column_break_1",
-  "status",
-  "raised_by",
-  "assigned_to",
-  "ball_in_court",
-  "section_break_reference",
-  "reference_doctype",
-  "reference_name",
-  "section_break_details",
-  "sender_recommendation",
-  "cost_impact",
-  "schedule_impact",
-  "requested_reply_date",
-  "section_break_reply",
-  "receivers_reply"
+  "naming_series", "project", "subject", "assigned_to", "status", "due_date",
+  "column_break_1", "question", "response_route", "response",
+  "section_break_watchers", "watchers"
  ],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "rfi_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "RFI Number",
-   "read_only": 1
-  },
-  {
-   "fieldname": "subject",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Subject",
-   "reqd": 1
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Text Editor",
-   "label": "Description"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Draft\nOpen\nAnswered\nClosed",
-   "default": "Draft"
-  },
-  {
-   "fieldname": "raised_by",
-   "fieldtype": "Link",
-   "label": "Raised By",
-   "options": "User"
-  },
-  {
-   "fieldname": "assigned_to",
-   "fieldtype": "Link",
-   "label": "Assigned To",
-   "options": "User"
-  },
-  {
-   "fieldname": "ball_in_court",
-   "fieldtype": "Data",
-   "label": "Ball In Court",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_break_reference",
-   "fieldtype": "Section Break",
-   "label": "Reference"
-  },
-  {
-   "fieldname": "reference_doctype",
-   "fieldtype": "Select",
-   "label": "Reference Type",
-   "options": "\nDrawing\nSpec Section"
-  },
-  {
-   "fieldname": "reference_name",
-   "fieldtype": "Dynamic Link",
-   "label": "Reference",
-   "options": "reference_doctype"
-  },
-  {
-   "fieldname": "section_break_details",
-   "fieldtype": "Section Break",
-   "label": "Details"
-  },
-  {
-   "fieldname": "sender_recommendation",
-   "fieldtype": "Text Editor",
-   "label": "Sender's Recommendation"
-  },
-  {
-   "fieldname": "cost_impact",
-   "fieldtype": "Check",
-   "label": "Cost Impact",
-   "default": "0"
-  },
-  {
-   "fieldname": "schedule_impact",
-   "fieldtype": "Check",
-   "label": "Schedule Impact",
-   "default": "0"
-  },
-  {
-   "fieldname": "requested_reply_date",
-   "fieldtype": "Date",
-   "label": "Requested Reply Date"
-  },
-  {
-   "fieldname": "section_break_reply",
-   "fieldtype": "Section Break",
-   "label": "Reply"
-  },
-  {
-   "fieldname": "receivers_reply",
-   "fieldtype": "Text Editor",
-   "label": "Receiver's Reply"
-  }
+  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "RFI-.YYYY.-.#####", "hidden": 1},
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "subject", "fieldtype": "Data", "label": "Subject", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "assigned_to", "fieldtype": "Link", "label": "Assigned To", "options": "User", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Open\nAnswered\nClosed\nEscalated", "default": "Open", "in_list_view": 1},
+  {"fieldname": "due_date", "fieldtype": "Date", "label": "Due Date", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "question", "fieldtype": "Text", "label": "Question", "reqd": 1},
+  {"fieldname": "response_route", "fieldtype": "Small Text", "label": "Response Route"},
+  {"fieldname": "response", "fieldtype": "Text", "label": "Response"},
+  {"fieldname": "section_break_watchers", "fieldtype": "Section Break", "label": "Watchers"},
+  {"fieldname": "watchers", "fieldtype": "Table", "label": "Watchers", "options": "RFI Watcher"}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Communications",
  "name": "RFI",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Project Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Accounting",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Document Controller",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Site Superintendent",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Subcontractor",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Document Controller", "read": 1},
+  {"role": "BuildPolaris Site Superintendent", "read": 1, "write": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1, "write": 1, "create": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

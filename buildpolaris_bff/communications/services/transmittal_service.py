@@ -1,36 +1,45 @@
+"""FR-4.3: Document Controller issues Transmittals recording what was sent,
+to whom, and when."""
 import frappe
 from frappe.utils import now_datetime
-from frappe.utils import now_datetime
 
-def create_transmittal(project: str, purpose: str, transmission_method: str,
-                       content_types: str = None, recipients: list = None):
-    """FR-8: Create a new Transmittal with recipients."""
-    transmittal = frappe.get_doc({
-        "doctype": "Transmittal",
-        "project": project,
-        "purpose": purpose,
-        "transmission_method": transmission_method,
-        "content_types": content_types,
-        "recipients": [
-            {"user": r, "acknowledged": 0} for r in (recipients or [])
-        ],
-    }).insert(ignore_permissions=True)
-    return transmittal.name
+from buildpolaris_bff.shared.exceptions import ValidationError
+from buildpolaris_bff.shared.permissions import assert_project_permission, assert_role
 
 
+def issue_transmittal(project, method, recipients, files, issued_by=None):
+	"""recipients: [str, ...]; files: [<File doctype name>, ...] (already
+	uploaded via Frappe's native File upload endpoint - FR-5.4)."""
+	issued_by = issued_by or frappe.session.user
+	assert_project_permission(project, ptype="write", user=issued_by)
+	assert_role("BuildPolaris Document Controller", "BuildPolaris Admin", user=issued_by)
 
-def acknowledge_transmittal(transmittal_id: str, recipient_user: str):
-    """FR-9: Record click-wrap acknowledgment with immutable timestamp."""
-    transmittal = frappe.get_doc("Transmittal", transmittal_id)
-    for recipient in transmittal.recipients:
-        if recipient.user == recipient_user:
-            if recipient.acknowledged:
-                frappe.throw("Already acknowledged")
-            recipient.acknowledged = 1
-            recipient.acknowledged_at = now_datetime()
-            break
-    transmittal.save(ignore_permissions=True)
-    return {"status": "success"}
+	if not recipients:
+		raise ValidationError("A Transmittal must have at least one recipient.")
+	if not files:
+		raise ValidationError("A Transmittal must reference at least one document.")
+
+	for file_name in files:
+		if not frappe.db.exists("File", file_name):
+			raise ValidationError(f"File '{file_name}' does not exist.")
+
+	doc = frappe.get_doc({
+		"doctype": "Transmittal",
+		"naming_series": "TX-.YYYY.-.#####",
+		"project": project,
+		"sent_by": issued_by,
+		"sent_at": now_datetime(),
+		"method": method,
+	})
+	for r in recipients:
+		doc.append("recipients", {"recipient": r})
+	for f in files:
+		doc.append("documents", {"file": f})
+	doc.insert()
+	return doc.as_dict()
 
 
-
+def list_transmittals(project: str, user: str | None = None):
+	assert_project_permission(project, ptype="read", user=user)
+	return frappe.get_all("Transmittal", filters={"project": project},
+	                       fields=["name", "sent_by", "sent_at", "method"], order_by="sent_at desc")

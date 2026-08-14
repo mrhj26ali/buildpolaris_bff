@@ -1,95 +1,77 @@
+"""FR-4.1: any authorized user raises an RFI with assignment, a defined
+response route, and watchers/CC recipients for visibility without
+transferring ownership."""
 import frappe
-from frappe.utils import now_datetime
-from frappe.utils import now_datetime
 
-def create_rfi(project: str, subject: str, description: str = None,
-               reference_doctype: str = None, reference_name: str = None,
-               sender_recommendation: str = None, cost_impact: int = 0,
-               schedule_impact: int = 0, requested_reply_date: str = None,
-               watchers: list = None):
-    """FR-1: Create a new RFI with Draft status."""
-    rfi = frappe.get_doc({
-        "doctype": "RFI",
-        "project": project,
-        "subject": subject,
-        "description": description,
-        "reference_doctype": reference_doctype,
-        "reference_name": reference_name,
-        "sender_recommendation": sender_recommendation,
-        "cost_impact": cost_impact,
-        "schedule_impact": schedule_impact,
-        "requested_reply_date": requested_reply_date,
-        "raised_by": frappe.session.user,
-        "status": "Draft",
-    }).insert(ignore_permissions=True)
-
-    # FR-2: Add watchers
-    if watchers:
-        for user in watchers:
-            frappe.get_doc({
-                "doctype": "RFI Watcher",
-                "rfi": rfi.name,
-                "user": user,
-                "watching": 1,
-            }).insert(ignore_permissions=True)
-
-    return rfi.name
+from buildpolaris_bff.shared.exceptions import ValidationError
+from buildpolaris_bff.shared.permissions import assert_project_permission
+from buildpolaris_bff.shared.security_log import log_security_event
 
 
+def create_rfi(project, subject, question, assigned_to, due_date, response_route=None,
+                watchers=None, created_by=None):
+	created_by = created_by or frappe.session.user
+	assert_project_permission(project, ptype="write", user=created_by)
 
-def submit_rfi(rfi_id: str):
-    """FR-1: Transition RFI from Draft to Open."""
-    rfi = frappe.get_doc("RFI", rfi_id)
-    if rfi.status != "Draft":
-        frappe.throw(f"Cannot submit RFI in status {rfi.status}")
-    rfi.status = "Open"
-    rfi.save(ignore_permissions=True)
-    return {"status": "success", "rfi_id": rfi.name}
-
-
-
-def answer_rfi(rfi_id: str, receivers_reply: str):
-    """FR-1: Transition RFI to Answered."""
-    rfi = frappe.get_doc("RFI", rfi_id)
-    if rfi.status != "Open":
-        frappe.throw(f"Cannot answer RFI in status {rfi.status}")
-    rfi.receivers_reply = receivers_reply
-    rfi.status = "Answered"
-    rfi.save(ignore_permissions=True)
-    return {"status": "success", "rfi_id": rfi.name}
-
+	doc = frappe.get_doc({
+		"doctype": "RFI",
+		"naming_series": "RFI-.YYYY.-.#####",
+		"project": project,
+		"subject": subject,
+		"question": question,
+		"assigned_to": assigned_to,
+		"due_date": due_date,
+		"response_route": response_route,
+		"status": "Open",
+	})
+	for watcher in (watchers or []):
+		doc.append("watchers", {"user": watcher})
+	doc.insert()
+	return doc.as_dict()
 
 
-def close_rfi(rfi_id: str):
-    """FR-1: Transition RFI to Closed."""
-    rfi = frappe.get_doc("RFI", rfi_id)
-    if rfi.status != "Answered":
-        frappe.throw(f"Cannot close RFI in status {rfi.status}")
-    rfi.status = "Closed"
-    rfi.save(ignore_permissions=True)
-    return {"status": "success", "rfi_id": rfi.name}
+def add_watcher(rfi: str, user: str, added_by: str | None = None):
+	"""Watchers see the RFI without owning it (FR-4.1)."""
+	added_by = added_by or frappe.session.user
+	doc = frappe.get_doc("RFI", rfi)
+	assert_project_permission(doc.project, ptype="read", user=added_by)
+
+	if any(w.user == user for w in doc.watchers):
+		return doc.as_dict()
+	doc.append("watchers", {"user": user})
+	doc.save()
+	return doc.as_dict()
 
 
+def answer_rfi(rfi: str, response: str, answered_by: str | None = None):
+	answered_by = answered_by or frappe.session.user
+	doc = frappe.get_doc("RFI", rfi)
+	assert_project_permission(doc.project, ptype="write", user=answered_by)
 
-def route_item(project: str, reference_doctype: str, reference_name: str,
-               reviewer: str, decision: str = None):
-    """FR-3: Record a routing step using the unified RouteStep entity."""
-    route_step = frappe.get_doc({
-        "doctype": "Route Step",
-        "project": project,
-        "reference_doctype": reference_doctype,
-        "reference_name": reference_name,
-        "reviewer": reviewer,
-        "decision": decision,
-        "routed_at": now_datetime(),
-    }).insert(ignore_permissions=True)
+	if doc.status not in ("Open", "Escalated"):
+		raise ValidationError(f"RFI must be Open or Escalated to answer (current: {doc.status}).")
 
-    # Update ball_in_court on the referenced document
-    doc = frappe.get_doc(reference_doctype, reference_name)
-    doc.ball_in_court = reviewer
-    doc.save(ignore_permissions=True)
-
-    return route_step.name
+	doc.response = response
+	doc.status = "Answered"
+	doc.save()
+	log_security_event("RFI_ANSWERED", {"rfi": rfi, "answered_by": answered_by})
+	return doc.as_dict()
 
 
+def close_rfi(rfi: str, closed_by: str | None = None):
+	closed_by = closed_by or frappe.session.user
+	doc = frappe.get_doc("RFI", rfi)
+	assert_project_permission(doc.project, ptype="write", user=closed_by)
 
+	if doc.status != "Answered":
+		raise ValidationError(f"RFI must be Answered before closing (current: {doc.status}).")
+	doc.status = "Closed"
+	doc.save()
+	return doc.as_dict()
+
+
+def list_rfis(project: str, user: str | None = None):
+	assert_project_permission(project, ptype="read", user=user)
+	return frappe.get_all("RFI", filters={"project": project},
+	                       fields=["name", "subject", "status", "assigned_to", "due_date"],
+	                       order_by="due_date asc")
