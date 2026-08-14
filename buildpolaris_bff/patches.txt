@@ -3,7 +3,6 @@
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
-
-# Extend native ERPNext/Frappe 'Task' DocType with CPM scheduling fields 
-# (WBS Code, Total Float, Is Critical, Constraints)
 buildpolaris_bff.patches.v1_0.add_scheduling_custom_fields
+buildpolaris_bff.patches.v1_0.apply_role_permissions
+buildpolaris_bff.patches.v1_0.add_client_uuid_fields

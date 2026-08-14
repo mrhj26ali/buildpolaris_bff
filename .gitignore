@@ -53,3 +53,7 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
+buildpolaris_bff.txt
+notes/
+_phase1_reference/
+.ruff_cache/

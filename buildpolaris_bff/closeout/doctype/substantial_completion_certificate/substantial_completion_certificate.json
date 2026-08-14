@@ -1,0 +1,185 @@
+{
+ "actions": [],
+ "autoname": "format:SCC-{project}-{####}",
+ "creation": "2026-08-09 10:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project",
+  "closing_record",
+  "substantial_completion_date",
+  "warranty_start_date",
+  "column_break_1",
+  "status",
+  "pm_initiated_by",
+  "section_break_signatures",
+  "owner_signed_by",
+  "owner_signed_at",
+  "column_break_2",
+  "architect_signed_by",
+  "architect_signed_at",
+  "section_break_terms",
+  "responsibility_terms",
+  "punch_snapshot"
+ ],
+ "fields": [
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Project",
+   "options": "Project",
+   "reqd": 1
+  },
+  {
+   "fieldname": "closing_record",
+   "fieldtype": "Link",
+   "label": "Closing Record",
+   "options": "Closing Record"
+  },
+  {
+   "fieldname": "substantial_completion_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Substantial Completion Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warranty_start_date",
+   "fieldtype": "Date",
+   "label": "Warranty Start Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "PendingSignature\nSigned",
+   "default": "PendingSignature"
+  },
+  {
+   "fieldname": "pm_initiated_by",
+   "fieldtype": "Link",
+   "label": "PM Initiated By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_signatures",
+   "fieldtype": "Section Break",
+   "label": "Signatures (Immutable per NFR-4)"
+  },
+  {
+   "fieldname": "owner_signed_by",
+   "fieldtype": "Link",
+   "label": "Owner Signed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "owner_signed_at",
+   "fieldtype": "Datetime",
+   "label": "Owner Signed At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "architect_signed_by",
+   "fieldtype": "Link",
+   "label": "Architect Signed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "architect_signed_at",
+   "fieldtype": "Datetime",
+   "label": "Architect Signed At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_terms",
+   "fieldtype": "Section Break",
+   "label": "Terms & Punch Snapshot"
+  },
+  {
+   "fieldname": "responsibility_terms",
+   "fieldtype": "Text Editor",
+   "label": "Responsibility Transfer Terms",
+   "description": "Utilities, insurance, security responsibility transfer"
+  },
+  {
+   "fieldname": "punch_snapshot",
+   "fieldtype": "Text Editor",
+   "label": "Punch List Snapshot",
+   "description": "Snapshot of open punch items at time of issuance (S1: SC reached with punch items still open)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-09 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Project Closeout",
+ "name": "Substantial Completion Certificate",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "BuildPolaris Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "BuildPolaris Owner",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "BuildPolaris Project Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

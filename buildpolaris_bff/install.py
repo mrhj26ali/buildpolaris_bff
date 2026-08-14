@@ -1,48 +1,15 @@
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
-ADMIN_ROLE_NAME = "BuildPolaris Admin"
 PLATFORM_ROLES = [
-	{
-		"role": "BuildPolaris Admin",
-		"persona": "admin",
-		"description": "Full tenant administration: users, roles, settings.",
-	},
-	{
-		"role": "BuildPolaris Owner",
-		"persona": "owner",
-		"description": "Read-heavy: CO final approval, EVM visibility, closeout sign-off.",
-	},
-	{
-		"role": "BuildPolaris Project Manager",
-		"persona": "pm",
-		"description": "Owns schedule, budget, RFIs, COs, EVM for assigned projects.",
-	},
-	{
-		"role": "BuildPolaris Accounting",
-		"persona": "pm",
-		"description": "Pay app approval, retainage, financial reconciliation.",
-	},
-	{
-		"role": "BuildPolaris Document Controller",
-		"persona": "pm",
-		"description": "Manages CDE, drawing revisions, IFC gating, transmittals.",
-	},
-	{
-		"role": "BuildPolaris Site Superintendent",
-		"persona": "site_super",
-		"description": "Field lead: daily logs, lookaheads, punch lists, safety.",
-	},
-	{
-		"role": "BuildPolaris Safety Officer",
-		"persona": "site_super",
-		"description": "Inspections, incident logging.",
-	},
-	{
-		"role": "BuildPolaris Subcontractor",
-		"persona": "subcontractor",
-		"description": "Restricted scope: submittals, RFIs, pay apps, punch resolution, closeout docs.",
-	},
+	{"role": "BuildPolaris Admin", "description": "Full tenant administration: users, roles, settings."},
+	{"role": "BuildPolaris Owner", "description": "Read-heavy oversight: change-order approval, EVM visibility, closeout sign-off."},
+	{"role": "BuildPolaris Project Manager", "description": "Owns schedule, budget, RFIs, change orders, EVM for assigned projects."},
+	{"role": "BuildPolaris Accounting", "description": "Pay application approval, retainage, financial reconciliation."},
+	{"role": "BuildPolaris Document Controller", "description": "Document control, drawing revisions, transmittals."},
+	{"role": "BuildPolaris Site Superintendent", "description": "Field lead: daily logs, look-aheads, punch lists."},
+	{"role": "BuildPolaris Safety Officer", "description": "Inspections, incident logging."},
+	{"role": "BuildPolaris Subcontractor", "description": "Restricted scope: own submittals, RFIs, pay applications, punch resolution, closeout documents."},
 ]
 
 
@@ -76,8 +43,10 @@ def create_platform_roles():
 
 
 def create_bp_custom_fields():
-	#Add BuildPolaris-specific fields to the native User DocType 
-    # (Activation tokens, invite status, company linkage
+	"""BuildPolaris-specific fields on the native User DocType: tenant
+	linkage and invite-lifecycle status only. Single-use secrets themselves
+	live in the 'Account Activation Token' doctype, hashed (NFR-SEC.3) -
+	never as a raw-token field on User."""
 	create_custom_fields(
 		{
 			"User": [
@@ -114,11 +83,6 @@ def create_bp_custom_fields():
 					"label": "Invited By",
 					"read_only": 1,
 				},
-				{"fieldname": "bp_column_1", "fieldtype": "Column Break"},
-				{"fieldname": "bp_activation_token", "fieldtype": "Data", "hidden": 1},
-				{"fieldname": "bp_activation_expiry", "fieldtype": "Datetime", "hidden": 1},
-				{"fieldname": "bp_invite_token", "fieldtype": "Data", "hidden": 1},
-				{"fieldname": "bp_invite_expiry", "fieldtype": "Datetime", "hidden": 1},
 			]
 		},
 		ignore_validate=True,
@@ -137,13 +101,8 @@ def enable_versioning():
 		if not existing:
 			try:
 				make_property_setter(
-					doctype,
-					None,
-					"track_changes",
-					"1",
-					"Check",
-					for_doctype=True,
-					validate_fields_for_doctype=False,
+					doctype, None, "track_changes", "1", "Check",
+					for_doctype=True, validate_fields_for_doctype=False,
 				)
 			except Exception:
 				frappe.db.set_value("DocType", doctype, "track_changes", 1)
