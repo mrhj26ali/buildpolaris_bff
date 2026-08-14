@@ -1,16 +1,35 @@
+import frappe
 from frappe.model.document import Document
+
+IMMUTABLE_STATUSES = ("Approved", "Paid")
+PROTECTED_FIELDS = ["commitment", "period_end", "retainage_pct"]
 
 
 class PayApplication(Document):
-    def validate(self):
-        self._calculate_totals()
+	def validate(self):
+		self._enforce_immutability()
 
-    def _calculate_totals(self):
-        total = 0
-        for line in self.lines:
-            line.total_completed = (line.previous_completed or 0) + (line.current_completed or 0)
-            total += line.total_completed
-        self.total_completed = total
-        self.retainage_amount = total * ((self.retainage_percent or 0) / 100)
-        current_period = sum(l.current_completed or 0 for l in self.lines)
-        self.net_due = current_period - (current_period * ((self.retainage_percent or 0) / 100))
+	def _enforce_immutability(self):
+		"""FR-3.8. Pay Application has no dedicated is_immutable field
+		(ERD §3.1) - immutability is governed by status: once the PRIOR
+		persisted state was Approved/Paid, protected fields freeze."""
+		if self.is_new() or self.flags.get("via_amendment"):
+			return
+		doc_before = self.get_doc_before_save()
+		if not doc_before or doc_before.status not in IMMUTABLE_STATUSES:
+			return
+
+		for f in PROTECTED_FIELDS:
+			if self.get(f) != doc_before.get(f):
+				frappe.throw(f"Cannot modify '{f}' on an Approved/Paid Pay Application (FR-3.8).")
+
+		before_lines = [
+			(r.cost_code, r.scheduled_value, r.work_completed_this_period, r.materials_stored)
+			for r in (doc_before.lines or [])
+		]
+		after_lines = [
+			(r.cost_code, r.scheduled_value, r.work_completed_this_period, r.materials_stored)
+			for r in (self.lines or [])
+		]
+		if before_lines != after_lines:
+			frappe.throw("Cannot modify line items on an Approved/Paid Pay Application (FR-3.8).")

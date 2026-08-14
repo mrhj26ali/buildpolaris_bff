@@ -20,20 +20,21 @@ before_request = [
 # job, and every recurring job is registered here, never a cron outside
 # Frappe's own scheduler).
 #
-# Phased delivery note: entries below are wired module-by-module. A string
-# reference to a not-yet-implemented function is safe at import time
-# (Frappe resolves it lazily when the job actually fires); this file is
-# re-issued complete at the end of each phase. Do not let a scheduler tick
-# fire against a job whose module hasn't landed yet.
+# Phased delivery note: a string reference to a not-yet-implemented
+# function is safe at import time (Frappe resolves it lazily when the job
+# actually fires); this file is re-issued complete at the end of each
+# phase. Do not let a scheduler tick fire against a job whose module
+# hasn't landed yet.
 # ------------------------------------------------------------------
 scheduler_events = {
 	"daily": [
-		"buildpolaris_bff.config.jobs.escalate_overdue_communications",   # FR-4.5 (Communications phase)
-		"buildpolaris_bff.config.jobs.closeout_lookahead_digest",          # M7 (Closeout phase)
+		"buildpolaris_bff.config.jobs.escalate_overdue_communications",   # FR-4.5 (Communications phase - body pending)
+		"buildpolaris_bff.config.jobs.closeout_lookahead_digest",          # M7 (Closeout phase - body pending)
+		"buildpolaris_bff.financials.services.evm_service.capture_nightly_snapshot",  # FR-3.7 (implemented)
 	],
 	"hourly": [
-		"buildpolaris_bff.config.jobs.schedule_health_check",                           # M2 (Scheduling phase)
-		"buildpolaris_bff.ai_copilot.services.retry_failed_ingestion.run",              # NFR-AIGOV.3 (AI Copilot phase)
+		"buildpolaris_bff.config.jobs.schedule_health_check",                           # FR-2.3 (implemented)
+		"buildpolaris_bff.ai_copilot.services.retry_failed_ingestion.run",              # NFR-AIGOV.3 (AI Copilot phase - pending)
 	],
 }
 

@@ -1,37 +1,81 @@
+"""FR-3.4: Change Events, optionally linked to an originating RFI. Approval
+updates the linked Commitment's revised amount - the defined amendment
+path for Commitment (FR-3.8)."""
 import frappe
-from frappe.utils import now_datetime
-from buildpolaris_bff.financials.services.budget import _update_cost_code_committed
 
-def create_change_event(project: str, title: str, amount: float = 0, change_type: str = "Change Order", cost_code: str = None, description: str = None, linked_rfi: str = None, linked_commitment: str = None):
-    change_event = frappe.get_doc({"doctype": "Change Event", "project": project, "title": title, "amount": amount, "change_type": change_type, "cost_code": cost_code, "description": description, "linked_rfi": linked_rfi, "linked_commitment": linked_commitment, "status": "Draft"}).insert(ignore_permissions=True)
-    return change_event.name
+from buildpolaris_bff.shared.exceptions import ValidationError
+from buildpolaris_bff.shared.permissions import assert_project_permission, assert_role
+from buildpolaris_bff.shared.security_log import log_security_event
 
-def submit_change_event(change_event_id: str):
-    ce = frappe.get_doc("Change Event", change_event_id)
-    if ce.status != "Draft": frappe.throw(f"Cannot submit change event in status '{ce.status}'")
-    ce.status = "Pending"
-    ce.save(ignore_permissions=True)
-    return {"status": "success", "change_event_id": ce.name}
+VALID_CATEGORIES = {"ScopeGap", "DesignError", "FieldCondition", "OwnerRequest", "Other"}
 
-def approve_change_event(change_event_id: str, approved_by: str = None):
-    ce = frappe.get_doc("Change Event", change_event_id)
-    if ce.status != "Pending": frappe.throw(f"Cannot approve change event in status '{ce.status}'. Must be Pending first.")
-    ce.status = "Approved"
-    ce.approved_by = approved_by or frappe.session.user
-    ce.approved_at = now_datetime()
-    ce.save(ignore_permissions=True)
-    if ce.linked_commitment:
-        commitment = frappe.get_doc("Commitment", ce.linked_commitment)
-        approved_total = frappe.get_all("Change Event", filters={"linked_commitment": ce.linked_commitment, "status": "Approved"}, fields=["amount"])
-        commitment.approved_changes = sum(c.amount or 0 for c in approved_total)
-        commitment.revised_amount = (commitment.original_amount or 0) + commitment.approved_changes
-        commitment.save(ignore_permissions=True)
-        _update_cost_code_committed(commitment.cost_code)
-    return {"status": "success", "change_event_id": ce.name}
 
-def reject_change_event(change_event_id: str):
-    ce = frappe.get_doc("Change Event", change_event_id)
-    if ce.status != "Pending": frappe.throw(f"Cannot reject change event in status '{ce.status}'")
-    ce.status = "Rejected"
-    ce.save(ignore_permissions=True)
-    return {"status": "success", "change_event_id": ce.name}
+def create_change_event(project, commitment, category, outcome_reason, amount_delta,
+                         originating_rfi=None, created_by=None):
+	created_by = created_by or frappe.session.user
+	assert_project_permission(project, ptype="write", user=created_by)
+	assert_role("BuildPolaris Project Manager", "BuildPolaris Admin", user=created_by)
+
+	if category not in VALID_CATEGORIES:
+		raise ValidationError(f"category must be one of {VALID_CATEGORIES}.")
+
+	commit_project = frappe.db.get_value("Commitment", commitment, "project")
+	if commit_project != project:
+		raise ValidationError("Commitment does not belong to this Project.")
+
+	doc = frappe.get_doc({
+		"doctype": "Change Event",
+		"naming_series": "CE-.YYYY.-.#####",
+		"project": project,
+		"commitment": commitment,
+		"originating_rfi": originating_rfi,
+		"category": category,
+		"outcome_reason": outcome_reason,
+		"amount_delta": amount_delta,
+		"status": "Open",
+	})
+	doc.insert()
+	return doc.as_dict()
+
+
+def approve_change_event(change_event: str, approved_by: str | None = None):
+	"""FR-3.4: Role: Owner or PM (unlike Commitment approval, which is
+	Accounting-only - this is a scope decision, not a payment decision)."""
+	approved_by = approved_by or frappe.session.user
+	assert_role("BuildPolaris Owner", "BuildPolaris Project Manager", "BuildPolaris Admin", user=approved_by)
+
+	doc = frappe.get_doc("Change Event", change_event)
+	assert_project_permission(doc.project, ptype="write", user=approved_by)
+
+	if doc.status != "Open":
+		raise ValidationError(f"Change Event must be Open to approve (current: {doc.status}).")
+
+	commitment_doc = frappe.get_doc("Commitment", doc.commitment)
+	commitment_doc.flags.via_amendment = True  # a Change Event IS the defined amendment path (FR-3.8)
+	commitment_doc.revised_amount = (commitment_doc.revised_amount or 0) + doc.amount_delta
+	commitment_doc.save()
+
+	doc.status = "Approved"
+	doc.approved_by = approved_by
+	doc.is_immutable = 1
+	doc.save()
+
+	log_security_event("CHANGE_EVENT_APPROVED", {
+		"change_event": change_event, "commitment": doc.commitment, "amount_delta": doc.amount_delta,
+	})
+	frappe.db.commit()
+	return doc.as_dict()
+
+
+def reject_change_event(change_event: str, rejected_by: str | None = None):
+	rejected_by = rejected_by or frappe.session.user
+	assert_role("BuildPolaris Owner", "BuildPolaris Project Manager", "BuildPolaris Admin", user=rejected_by)
+
+	doc = frappe.get_doc("Change Event", change_event)
+	assert_project_permission(doc.project, ptype="write", user=rejected_by)
+	if doc.status != "Open":
+		raise ValidationError(f"Change Event must be Open to reject (current: {doc.status}).")
+	doc.status = "Rejected"
+	doc.is_immutable = 1
+	doc.save()
+	return doc.as_dict()

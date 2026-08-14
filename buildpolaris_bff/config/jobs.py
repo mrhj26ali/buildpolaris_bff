@@ -7,51 +7,43 @@ from frappe.utils import today
 
 
 def escalate_overdue_communications():
-    """
-    UC-4.5 / FR-4.5: escalate overdue RFIs and Action Items via the existing
-    notification engine. Runs daily.
-    """
-    overdue_rfis = frappe.get_all(
-        "RFI", filters={"status": ["not in", ["Closed", "Answered"]], "requested_reply_date": ["<", today()]},
-        fields=["name", "assigned_to", "project"], ignore_permissions=True,
-    )
-    for rfi in overdue_rfis:
-        _escalate("RFI", rfi.name)
+	"""
+	UC-4.5 / FR-4.5: escalate overdue RFIs and Action Items via the existing
+	notification engine. Runs daily.
 
-    overdue_actions = frappe.get_all(
-        "Action Item", filters={"status": ["!=", "Closed"], "due_date": ["<", today()]},
-        fields=["name", "assigned_to", "project"], ignore_permissions=True,
-    )
-    for item in overdue_actions:
-        _escalate("Action Item", item.name)
-    frappe.db.commit()
-
-
-def _escalate(reference_doctype, reference_name):
-    already = frappe.db.exists("Escalation Log", {
-        "reference_doctype": reference_doctype, "reference_name": reference_name,
-    })
-    if already:
-        return
-    try:
-        frappe.get_doc({
-            "doctype": "Escalation Log",
-            "reference_doctype": reference_doctype,
-            "reference_name": reference_name,
-            "escalation_tier": 1,
-        }).insert(ignore_permissions=True)
-    except Exception:
-        frappe.log_error(
-            title=f"BuildPolaris escalation failed: {reference_doctype} {reference_name}",
-            message=frappe.get_traceback(),
-        )
+	NOTE: pending the Communications phase - 'Escalation Log' as referenced
+	in the pre-refactor draft was removed in the ARCH v2.1 refactor (FR-4.5
+	uses native ToDo/notification engine, not a bespoke doctype). This
+	function body is replaced when communications/services/escalation_service.py
+	lands.
+	"""
+	pass
 
 
 def closeout_lookahead_digest():
-    """Phase 6 placeholder: closeout look-ahead digests to PM/Owner."""
-    pass
+	"""Closeout phase: look-ahead digests to PM/Owner ahead of Substantial
+	Completion (FR-7.x). Implemented in the Closeout phase."""
+	pass
 
 
 def schedule_health_check():
-    """Hourly placeholder: lightweight schedule health for active projects."""
-    pass
+	"""FR-2.3: hourly DCMA health check across active Projects. Only logs
+	when a Project actually has flagged findings (negative float, cycles,
+	etc.) - an operator-visible warning (NFR-OBS.2), not a failure."""
+	from buildpolaris_bff.scheduling.services.schedule_validation import run_health_check
+
+	projects = frappe.get_all("Project", filters={"status": "Open"}, pluck="name")
+	for project in projects:
+		try:
+			findings = run_health_check(project, user="Administrator")
+			if findings["summary"]["total_flagged_items"] > 0:
+				frappe.log_error(
+					title=f"[SCHEDULE HEALTH] {project}: {findings['summary']['total_flagged_items']} finding(s)",
+					message=frappe.as_json(findings),
+				)
+		except Exception:
+			frappe.log_error(
+				title=f"Schedule health check failed for {project}",
+				message=frappe.get_traceback(),
+			)
+	frappe.db.commit()

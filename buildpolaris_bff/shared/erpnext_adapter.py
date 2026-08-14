@@ -3,9 +3,9 @@ Adapter over native ERPNext v16 doctypes - the ONLY path BuildPolaris uses
 to touch financial data (REQ "Financial system of record" clause; no
 parallel ledger, ever - ERD §3.1 design note).
 
-financials/services/*.py (Phase 2, later) calls these functions; it never
-constructs a Purchase Order / Purchase Invoice / Payment Entry doc directly,
-so every financial-doctype creation path is auditable from one file.
+financials/services/*.py calls these functions; it never constructs a
+Purchase Order / Purchase Invoice / Payment Entry doc directly, so every
+financial-doctype creation path is auditable from one file.
 """
 import frappe
 from frappe.utils import flt, nowdate
@@ -48,8 +48,33 @@ def get_or_create_cost_center(company: str, cost_center_name: str | None = None)
 	return doc.name
 
 
-def create_purchase_order(company: str, supplier: str, project: str, items: list[dict],
-                           cost_center: str | None = None) -> str:
+def get_or_create_billing_item(cost_code: str) -> str:
+	"""Non-stock service Item representing billing against a Cost Code, so
+	Pay Application lines can post through ERPNext's standard Purchase
+	Invoice Item table (which requires a real Item link) without pretending
+	a Cost Code is physical inventory. One Item per Cost Code, reused."""
+	item_code = f"BP-COSTCODE-{cost_code}"
+	if frappe.db.exists("Item", item_code):
+		return item_code
+
+	cost_code_doc = frappe.db.get_value("Cost Code", cost_code, ["code", "description"], as_dict=True)
+	doc = frappe.new_doc("Item")
+	doc.item_code = item_code
+	doc.item_name = f"Cost Code {cost_code_doc.code if cost_code_doc else cost_code} Billing"
+	doc.item_group = _default_service_item_group()
+	doc.is_stock_item = 0
+	doc.include_item_in_manufacturing = 0
+	doc.insert(ignore_permissions=True)
+	return item_code
+
+
+def _default_service_item_group() -> str:
+	if frappe.db.exists("Item Group", "Services"):
+		return "Services"
+	return frappe.db.get_single_value("Selling Settings", "item_group") or "All Item Groups"
+
+
+def create_purchase_order(company: str, supplier: str, project: str, items: list, cost_center: str | None = None) -> str:
 	"""FR-3.3: Commitment approval (PO-type only) creates and links a native
 	Purchase Order. `items` is [{item_code|description, qty, rate}, ...]."""
 	doc = frappe.new_doc("Purchase Order")
@@ -72,11 +97,14 @@ def create_purchase_order(company: str, supplier: str, project: str, items: list
 
 
 def create_purchase_invoice_with_retainage(company: str, supplier: str, project: str,
-                                            items: list[dict], retainage_pct: float,
+                                            items: list, retainage_pct: float,
                                             purchase_order: str | None = None) -> str:
 	"""FR-3.5: Pay Application approval generates a native Purchase Invoice
 	with retainage modeled as a held-back Payment Term - so it appears in
 	ERPNext's own AP aging, never a side field the platform tracks alone."""
+	_ensure_payment_term("Immediate", "Immediate")
+	_ensure_payment_term("Retainage Held", "Retainage withheld until closeout release (FR-3.5).")
+
 	doc = frappe.new_doc("Purchase Invoice")
 	doc.company = company
 	doc.supplier = supplier
@@ -97,6 +125,17 @@ def create_purchase_invoice_with_retainage(company: str, supplier: str, project:
 	doc.insert(ignore_permissions=True)
 	doc.submit()
 	return doc.name
+
+
+def _ensure_payment_term(name: str, description: str) -> str:
+	if not frappe.db.exists("Payment Term", name):
+		frappe.get_doc({
+			"doctype": "Payment Term",
+			"payment_term_name": name,
+			"description": description,
+			"invoice_portion": 100,
+		}).insert(ignore_permissions=True)
+	return name
 
 
 def _apply_retainage_payment_terms(purchase_invoice_doc, retainage_pct: float):
