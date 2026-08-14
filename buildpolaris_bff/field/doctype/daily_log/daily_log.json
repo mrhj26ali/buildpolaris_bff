@@ -1,200 +1,45 @@
 {
  "actions": [],
- "autoname": "format:DL-{project}-{####}",
- "creation": "2026-08-08 10:00:00",
+ "autoname": "naming_series:",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "project",
-  "log_date",
-  "submitted_by",
-  "column_break_1",
-  "status",
-  "weather_conditions",
-  "temperature",
-  "section_break_work",
-  "workforce_count",
-  "work_performed",
-  "section_break_details",
-  "delays",
-  "visitors",
-  "notes",
-  "section_break_location",
-  "gps_latitude",
-  "gps_longitude",
-  "section_break_photos",
-  "photos"
+  "naming_series", "project", "log_date", "submitted_by",
+  "column_break_1", "weather", "notes",
+  "section_break_labor", "labor",
+  "section_break_equipment", "equipment",
+  "section_break_media", "media"
  ],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "log_date",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "label": "Log Date",
-   "reqd": 1
-  },
-  {
-   "fieldname": "submitted_by",
-   "fieldtype": "Link",
-   "label": "Submitted By",
-   "options": "User"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Draft\nSubmitted\nSynced",
-   "default": "Draft"
-  },
-  {
-   "fieldname": "weather_conditions",
-   "fieldtype": "Select",
-   "label": "Weather Conditions",
-   "options": "\nSunny\nCloudy\nRainy\nWindy\nSnowy\nExtreme Heat\nExtreme Cold"
-  },
-  {
-   "fieldname": "temperature",
-   "fieldtype": "Data",
-   "label": "Temperature"
-  },
-  {
-   "fieldname": "section_break_work",
-   "fieldtype": "Section Break",
-   "label": "Work Details"
-  },
-  {
-   "fieldname": "workforce_count",
-   "fieldtype": "Int",
-   "label": "Workforce Count",
-   "default": "0"
-  },
-  {
-   "fieldname": "work_performed",
-   "fieldtype": "Text Editor",
-   "label": "Work Performed"
-  },
-  {
-   "fieldname": "section_break_details",
-   "fieldtype": "Section Break",
-   "label": "Additional Details"
-  },
-  {
-   "fieldname": "delays",
-   "fieldtype": "Text Editor",
-   "label": "Delays / Issues"
-  },
-  {
-   "fieldname": "visitors",
-   "fieldtype": "Text Editor",
-   "label": "Visitors"
-  },
-  {
-   "fieldname": "notes",
-   "fieldtype": "Text Editor",
-   "label": "General Notes"
-  },
-  {
-   "fieldname": "section_break_location",
-   "fieldtype": "Section Break",
-   "label": "GPS Location"
-  },
-  {
-   "fieldname": "gps_latitude",
-   "fieldtype": "Float",
-   "label": "GPS Latitude",
-   "precision": "6"
-  },
-  {
-   "fieldname": "gps_longitude",
-   "fieldtype": "Float",
-   "label": "GPS Longitude",
-   "precision": "6"
-  },
-  {
-   "fieldname": "section_break_photos",
-   "fieldtype": "Section Break",
-   "label": "Photo Evidence"
-  },
-  {
-   "fieldname": "photos",
-   "fieldtype": "Table",
-   "label": "Photos",
-   "options": "Daily Log Photo"
-  }
+  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "DL-.YYYY.-.#####", "hidden": 1},
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "log_date", "fieldtype": "Date", "label": "Log Date", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "submitted_by", "fieldtype": "Link", "label": "Submitted By", "options": "User", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "weather", "fieldtype": "Text", "label": "Weather"},
+  {"fieldname": "notes", "fieldtype": "Text", "label": "Notes"},
+  {"fieldname": "section_break_labor", "fieldtype": "Section Break", "label": "Labor"},
+  {"fieldname": "labor", "fieldtype": "Table", "label": "Labor", "options": "Daily Log Labor Line"},
+  {"fieldname": "section_break_equipment", "fieldtype": "Section Break", "label": "Equipment"},
+  {"fieldname": "equipment", "fieldtype": "Table", "label": "Equipment", "options": "Daily Log Equipment Line"},
+  {"fieldname": "section_break_media", "fieldtype": "Section Break", "label": "Photos"},
+  {"fieldname": "media", "fieldtype": "Table", "label": "Media", "options": "Media Capture"}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
- "module": "Field Execution",
+ "module": "Field",
  "name": "Daily Log",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Project Manager",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Site Superintendent",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Site Superintendent", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
