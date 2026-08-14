@@ -1,179 +1,38 @@
 {
  "actions": [],
- "autoname": "format:PUNCH-{project}-{####}",
- "creation": "2026-08-08 10:00:00",
+ "autoname": "naming_series:",
+ "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "project",
-  "title",
-  "description",
-  "location",
-  "column_break_1",
-  "assigned_to",
-  "priority",
-  "status",
-  "due_date",
-  "section_break_tracking",
-  "closed_at",
-  "linked_rfi",
-  "section_break_evidence",
-  "photo_url",
-  "notes"
+  "naming_series", "project", "location", "description",
+  "column_break_1", "assigned_to", "status", "rfi", "closed_at"
  ],
  "fields": [
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
-  },
-  {
-   "fieldname": "title",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Title",
-   "reqd": 1
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Text Editor",
-   "label": "Description"
-  },
-  {
-   "fieldname": "location",
-   "fieldtype": "Data",
-   "label": "Location / Area"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "assigned_to",
-   "fieldtype": "Link",
-   "label": "Assigned To",
-   "options": "User"
-  },
-  {
-   "fieldname": "priority",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Priority",
-   "options": "Low\nMedium\nHigh\nCritical",
-   "default": "Medium"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Open\nIn Progress\nClosed",
-   "default": "Open"
-  },
-  {
-   "fieldname": "due_date",
-   "fieldtype": "Date",
-   "label": "Due Date"
-  },
-  {
-   "fieldname": "section_break_tracking",
-   "fieldtype": "Section Break",
-   "label": "Tracking"
-  },
-  {
-   "fieldname": "closed_at",
-   "fieldtype": "Datetime",
-   "label": "Closed At",
-   "read_only": 1
-  },
-  {
-   "fieldname": "linked_rfi",
-   "fieldtype": "Link",
-   "label": "Linked RFI",
-   "options": "RFI"
-  },
-  {
-   "fieldname": "section_break_evidence",
-   "fieldtype": "Section Break",
-   "label": "Evidence"
-  },
-  {
-   "fieldname": "photo_url",
-   "fieldtype": "Data",
-   "label": "Photo URL"
-  },
-  {
-   "fieldname": "notes",
-   "fieldtype": "Text Editor",
-   "label": "Notes"
-  }
+  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "PLI-.YYYY.-.#####", "hidden": 1},
+  {"fieldname": "project", "fieldtype": "Link", "label": "Project", "options": "Project", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "location", "fieldtype": "Data", "label": "Location", "in_list_view": 1},
+  {"fieldname": "description", "fieldtype": "Data", "label": "Description", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "assigned_to", "fieldtype": "Link", "label": "Assigned To", "options": "User", "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Open\nInProgress\nClosed", "default": "Open", "in_list_view": 1},
+  {"fieldname": "rfi", "fieldtype": "Link", "label": "RFI", "options": "RFI"},
+  {"fieldname": "closed_at", "fieldtype": "Datetime", "label": "Closed At", "read_only": 1}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-08 10:00:00",
+ "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
- "module": "Field Execution",
+ "module": "Field",
  "name": "Punch List Item",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
-  {
-   "role": "System Manager",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Admin",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Owner",
-   "read": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1
-  },
-  {
-   "role": "BuildPolaris Site Superintendent",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  },
-  {
-   "role": "BuildPolaris Subcontractor",
-   "read": 1,
-   "write": 1,
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "report": 1,
-   "share": 1
-  }
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Site Superintendent", "read": 1, "write": 1, "create": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1, "write": 1, "create": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class MediaCapture(Document):
+class DailyLogLaborLine(Document):
 	pass

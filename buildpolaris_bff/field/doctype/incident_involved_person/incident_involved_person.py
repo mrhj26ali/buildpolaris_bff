@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class MediaCapture(Document):
+class IncidentInvolvedPerson(Document):
 	pass

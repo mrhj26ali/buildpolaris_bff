@@ -5,17 +5,17 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "istable": 1,
- "field_order": ["hazard", "mitigation"],
+ "field_order": ["equipment", "hours_used"],
  "fields": [
-  {"fieldname": "hazard", "fieldtype": "Data", "label": "Hazard", "reqd": 1, "in_list_view": 1},
-  {"fieldname": "mitigation", "fieldtype": "Data", "label": "Mitigation", "reqd": 1, "in_list_view": 1}
+  {"fieldname": "equipment", "fieldtype": "Data", "label": "Equipment", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "hours_used", "fieldtype": "Float", "label": "Hours Used", "in_list_view": 1}
  ],
  "index_web_pages_for_search": 0,
  "links": [],
  "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Field",
- "name": "JSA Hazard Line",
+ "name": "Daily Log Equipment Line",
  "owner": "Administrator",
  "permissions": [
   {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}

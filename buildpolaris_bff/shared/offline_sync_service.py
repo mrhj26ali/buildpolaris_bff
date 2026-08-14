@@ -7,9 +7,10 @@ a bypass of it (ERD §5.4). Renamed from the draft's `sync_engine.py`, which
 collided conceptually with the PWA's own client-side SyncEngine.ts.
 
 Covers exactly the four Field Execution collections that are the RxDB
-writable boundary (ERD §3.4 design note). The target functions below are
-implemented in the Field module phase - this dispatcher is written now so
-the shared contract is fixed before that phase begins.
+writable boundary (ERD §3.4 design note): Daily Log, JSA, Safety Incident,
+Punch List Item. Each has its own apply_offline_write() in its own service
+module, following the same one-doctype-one-service pattern as the rest of
+the platform.
 """
 import importlib
 
@@ -17,11 +18,9 @@ from buildpolaris_bff.shared.exceptions import ValidationError
 from buildpolaris_bff.shared.idempotency import idempotent_write
 from buildpolaris_bff.shared.permissions import assert_project_permission
 
-# doctype -> (module path, apply-function name). Lazily imported to avoid a
-# circular import between shared/ and field/ at module load time.
 _SYNC_TARGETS = {
 	"Daily Log": ("buildpolaris_bff.field.services.daily_log_service", "apply_offline_write"),
-	"JSA": ("buildpolaris_bff.field.services.safety_incident_service", "apply_jsa_offline_write"),
+	"JSA": ("buildpolaris_bff.field.services.jsa_service", "apply_offline_write"),
 	"Safety Incident": ("buildpolaris_bff.field.services.safety_incident_service", "apply_offline_write"),
 	"Punch List Item": ("buildpolaris_bff.field.services.punch_list_service", "apply_offline_write"),
 }
@@ -36,8 +35,7 @@ def _resolve(doctype: str):
 	return getattr(module, fn_name)
 
 
-def apply_offline_write(doctype: str, payload: dict, local_uuid: str,
-                         idempotency_key: str | None = None) -> dict:
+def apply_offline_write(doctype: str, payload: dict, local_uuid: str, idempotency_key: str | None = None) -> dict:
 	"""Re-validate and apply one queued PWA write (ERD §6 'Field write'
 	sequence). Never silently drops a write (NFR-UX.3) - any failure raises,
 	which the PWA surfaces as a visible sync-conflict/error state.

@@ -1,13 +1,68 @@
+"""FR-6.1: Site Superintendent submits a Daily Log (weather, labor,
+equipment, notes) with attached photos. Also the offline-sync target for
+the 'Daily Log' collection (FR-6.5, dispatched via
+shared/offline_sync_service.py)."""
 import frappe
-from frappe.utils import now_datetime
 
-def create_daily_log(project: str, log_date: str, weather_conditions: str = None, temperature: str = None, workforce_count: int = 0, work_performed: str = None, delays: str = None, visitors: str = None, notes: str = None, gps_latitude: float = None, gps_longitude: float = None, photos: list = None):
-    log = frappe.get_doc({"doctype": "Daily Log", "project": project, "log_date": log_date, "weather_conditions": weather_conditions, "temperature": temperature, "workforce_count": workforce_count, "work_performed": work_performed, "delays": delays, "visitors": visitors, "notes": notes, "gps_latitude": gps_latitude, "gps_longitude": gps_longitude, "status": "Draft", "photos": [{"file_url": p.get("file_url", ""), "caption": p.get("caption", ""), "gps_lat": p.get("gps_lat"), "gps_lng": p.get("gps_lng"), "captured_at": p.get("captured_at", now_datetime())} for p in (photos or [])]}).insert(ignore_permissions=True)
-    return log.name
+from buildpolaris_bff.shared.permissions import assert_project_permission, assert_role
 
-def submit_daily_log(log_id: str):
-    log = frappe.get_doc("Daily Log", log_id)
-    if log.status != "Draft": frappe.throw(f"Cannot submit daily log in status {log.status}")
-    log.status = "Submitted"
-    log.save(ignore_permissions=True)
-    return {"status": "success", "log_id": log.name}
+
+def create_daily_log(project, log_date, weather=None, notes=None, labor=None, equipment=None,
+                      media=None, submitted_by=None):
+	"""labor: [{trade, headcount, hours}]; equipment: [{equipment, hours_used}];
+	media: [{file, latitude, longitude, captured_at}] (FR-6.6, see
+	media_capture_service for EXIF fallback extraction)."""
+	submitted_by = submitted_by or frappe.session.user
+	assert_project_permission(project, ptype="write", user=submitted_by)
+	assert_role("BuildPolaris Site Superintendent", "BuildPolaris Admin", user=submitted_by)
+
+	doc = frappe.get_doc({
+		"doctype": "Daily Log",
+		"naming_series": "DL-.YYYY.-.#####",
+		"project": project,
+		"log_date": log_date,
+		"submitted_by": submitted_by,
+		"weather": weather,
+		"notes": notes,
+	})
+	for line in (labor or []):
+		doc.append("labor", {
+			"trade": line.get("trade"), "headcount": line.get("headcount"), "hours": line.get("hours"),
+		})
+	for line in (equipment or []):
+		doc.append("equipment", {
+			"equipment": line.get("equipment"), "hours_used": line.get("hours_used"),
+		})
+	doc.insert()
+
+	if media:
+		from buildpolaris_bff.field.services.media_capture_service import add_media_capture
+		for m in media:
+			add_media_capture("Daily Log", doc.name, m.get("file"), m.get("latitude"),
+			                   m.get("longitude"), m.get("captured_at"), added_by=submitted_by)
+
+	return doc.as_dict()
+
+
+def apply_offline_write(payload: dict, local_uuid: str) -> dict:
+	"""Dispatched by shared/offline_sync_service.py. Field names match the
+	RxDB 'daily_logs' collection 1:1 (ERD §3.4 design note) - no
+	translation layer that could silently drop a field."""
+	doc = create_daily_log(
+		project=payload.get("project"),
+		log_date=payload.get("log_date"),
+		weather=payload.get("weather"),
+		notes=payload.get("notes"),
+		labor=payload.get("labor") or [],
+		equipment=payload.get("equipment") or [],
+		media=payload.get("media") or [],
+		submitted_by=payload.get("submitted_by"),
+	)
+	return {"server_id": doc["name"], "sync_status": "synced"}
+
+
+def list_daily_logs(project: str, user: str | None = None):
+	assert_project_permission(project, ptype="read", user=user)
+	return frappe.get_all("Daily Log", filters={"project": project},
+	                       fields=["name", "log_date", "submitted_by", "weather"],
+	                       order_by="log_date desc")
