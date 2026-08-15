@@ -3,6 +3,11 @@
 Runs once per site during migration. Child tables inherit their parent's
 permissions and are intentionally skipped. The matrix is also persisted back
 into each DocType's JSON definition so the change survives future syncs.
+
+Copilot Thread / Copilot Message are deliberately NOT in this matrix - their
+if_owner-scoped permissions are defined directly in their own doctype JSON
+(a generic role->access-level matrix has no if_owner concept), and this
+patch only ever touches doctypes it's explicitly told about.
 """
 
 import json
@@ -52,6 +57,9 @@ PERMISSION_MATRIX = {
 	"Contractors Affidavit": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_ACCOUNTING: WRITE_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
 	"OM Manual": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: WRITE_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
 	"Warranty Document": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: WRITE_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
+	"Agent Action Approval": {ROLE_ADMIN: FULL_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: WRITE_ACCESS, ROLE_OWNER: WRITE_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS},
+	"Agent Mutation Log": {ROLE_ADMIN: FULL_ACCESS, ROLE_PROJECT_MANAGER: READ_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_ACCOUNTING: READ_ACCESS},
+	"AI Document Index": {ROLE_ADMIN: FULL_ACCESS, ROLE_PROJECT_MANAGER: READ_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_ACCOUNTING: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
 }
 
 
