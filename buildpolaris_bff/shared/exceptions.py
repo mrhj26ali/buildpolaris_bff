@@ -70,6 +70,16 @@ class ImmutableRecordError(BuildPolarisError):
 	error_code = "IMMUTABLE_RECORD"
 
 
+class AISidecarUnavailableError(BuildPolarisError):
+	"""Raised when buildpolaris_ai is slow, unreachable, or returns an
+	unexpected response. NFR-SCALE.5: the platform must remain fully usable
+	for all non-AI workflows when this happens - callers of this exception
+	(copilot_gateway_service, ingestion_trigger_service) must fail closed
+	with a clear message, never block or corrupt a core PM workflow."""
+	http_status_code = 503
+	error_code = "AI_SIDECAR_UNAVAILABLE"
+
+
 def to_frappe_exception(err: BuildPolarisError):
 	"""Translate a BuildPolarisError into the nearest native frappe exception
 	so Frappe's own request/response machinery sets the right HTTP status."""

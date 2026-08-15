@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-08-15 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "file", "source_doctype", "source_name", "column_break_1", "content_hash", "status",
+  "section_break_1", "status_detail", "chunk_count", "model_version", "last_indexed_at"
+ ],
+ "fields": [
+  {"fieldname": "file", "fieldtype": "Link", "label": "File", "options": "File", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "source_doctype", "fieldtype": "Data", "label": "Source DocType", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "source_name", "fieldtype": "Data", "label": "Source Name", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "content_hash", "fieldtype": "Data", "label": "Content Hash", "read_only": 1, "description": "SHA-256 of the extracted text layer's source bytes - idempotency key for re-uploads (FR-8.10)."},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Queued\nProcessing\nIndexed\nFailed", "default": "Queued", "in_list_view": 1, "read_only": 1},
+  {"fieldname": "section_break_1", "fieldtype": "Section Break", "label": "Result"},
+  {"fieldname": "status_detail", "fieldtype": "Small Text", "label": "Status Detail", "read_only": 1, "description": "Stated reason on Failed - never silently indexed as empty (FR-8.10)."},
+  {"fieldname": "chunk_count", "fieldtype": "Int", "label": "Chunk Count", "read_only": 1},
+  {"fieldname": "model_version", "fieldtype": "Data", "label": "Embedding Model Version", "read_only": 1},
+  {"fieldname": "last_indexed_at", "fieldtype": "Datetime", "label": "Last Indexed At", "read_only": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-15 00:00:00",
+ "modified_by": "Administrator",
+ "module": "AI Copilot",
+ "name": "AI Document Index",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Project Manager", "read": 1},
+  {"role": "BuildPolaris Owner", "read": 1},
+  {"role": "BuildPolaris Accounting", "read": 1},
+  {"role": "BuildPolaris Document Controller", "read": 1},
+  {"role": "BuildPolaris Subcontractor", "read": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

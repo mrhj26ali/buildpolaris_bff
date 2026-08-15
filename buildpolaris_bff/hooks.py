@@ -15,16 +15,17 @@ before_request = [
 ]
 
 # ------------------------------------------------------------------
+# Install / migrate lifecycle (install.py: platform Roles, BuildPolaris
+# custom fields on User, the low-privilege AI Service transport account).
+# ------------------------------------------------------------------
+after_install = "buildpolaris_bff.install.after_install"
+after_migrate = "buildpolaris_bff.install.after_migrate"
+
+# ------------------------------------------------------------------
 # Scheduler Events (ARCH §1.1: no message broker anywhere - every
 # propagation is either synchronous REST or a frappe.enqueue background
 # job, and every recurring job is registered here, never a cron outside
 # Frappe's own scheduler).
-#
-# Phased delivery note: a string reference to a not-yet-implemented
-# function is safe at import time (Frappe resolves it lazily when the job
-# actually fires); this file is re-issued complete at the end of each
-# phase. Do not let a scheduler tick fire against a job whose module
-# hasn't landed yet.
 # ------------------------------------------------------------------
 scheduler_events = {
 	"daily": [
@@ -34,7 +35,7 @@ scheduler_events = {
 	],
 	"hourly": [
 		"buildpolaris_bff.config.jobs.schedule_health_check",                           # FR-2.3 (implemented)
-		"buildpolaris_bff.ai_copilot.services.retry_failed_ingestion.run",              # NFR-AIGOV.3 (AI Copilot phase - pending)
+		"buildpolaris_bff.ai_copilot.services.retry_failed_ingestion.run",              # NFR-AIGOV.3 (implemented)
 	],
 }
 
@@ -42,11 +43,49 @@ scheduler_events = {
 # Document Events
 #   No wildcard "*" hook here (ARCH §2.4/§4.3 correction: no CDC/event-bus
 #   layer exists in this design). Each module wires ONLY the specific
-#   DocType hooks its own FRs require (e.g. File.after_insert for FR-8.10
-#   ingestion, entity-mirror hooks for FR-8.2) directly - added in the
-#   AI Copilot phase, not here as a platform-wide catch-all.
+#   DocType hooks its own FRs require:
+#     - File.after_insert: FR-8.10 ingestion trigger (allow-listed source
+#       doctypes only - checked inside the handler, not here).
+#     - Task/RFI/Commitment/Change Event/Punch List Item/Safety Incident:
+#       FR-8.2 entity-mirror - keeps buildpolaris_ai's graph store current
+#       without polling. Safety Incident mirrors metadata only
+#       (NFR-PRIV.1/PRIV.2 - see entity_mirror_service.py's field map).
 # ------------------------------------------------------------------
-doc_events = {}
+doc_events = {
+	"File": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.ingestion_trigger_service.on_file_after_insert",
+	},
+	"Task": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_update": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_trash": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+	},
+	"RFI": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_update": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_trash": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+	},
+	"Commitment": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_update": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_trash": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+	},
+	"Change Event": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_update": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_trash": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+	},
+	"Punch List Item": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_update": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_trash": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+	},
+	"Safety Incident": {
+		"after_insert": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_update": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+		"on_trash": "buildpolaris_bff.ai_copilot.services.entity_mirror_service.mirror_hook",
+	},
+}
 
 # ------------------------------------------------------------------
 # Fixtures / Permissions / Website
