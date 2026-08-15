@@ -1,17 +1,13 @@
 {
  "actions": [],
- "autoname": "naming_series:",
+ "autoname": "hash",
  "creation": "2026-08-13 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": ["naming_series", "closing_record", "supplier", "pay_application", "column_break_1", "type", "file"],
+ "field_order": ["closing_record", "category", "file"],
  "fields": [
-  {"fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "LW-.YYYY.-.#####", "hidden": 1},
   {"fieldname": "closing_record", "fieldtype": "Link", "label": "Closing Record", "options": "Closing Record", "reqd": 1, "in_list_view": 1},
-  {"fieldname": "supplier", "fieldtype": "Link", "label": "Supplier", "options": "Supplier", "reqd": 1, "in_list_view": 1},
-  {"fieldname": "pay_application", "fieldtype": "Link", "label": "Pay Application", "options": "Pay Application"},
-  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
-  {"fieldname": "type", "fieldtype": "Select", "label": "Type", "options": "Conditional\nUnconditional\nPartial\nFinal", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "category", "fieldtype": "Select", "label": "Category", "options": "OMManual\nWarranty\nConsentOfSurety\nContractorAffidavit", "reqd": 1, "in_list_view": 1},
   {"fieldname": "file", "fieldtype": "Link", "label": "File", "options": "File", "reqd": 1}
  ],
  "index_web_pages_for_search": 0,
@@ -19,11 +15,12 @@
  "modified": "2026-08-13 00:00:00",
  "modified_by": "Administrator",
  "module": "Closeout",
- "name": "Lien Waiver",
+ "name": "Closeout Document",
  "owner": "Administrator",
  "permissions": [
   {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
   {"role": "BuildPolaris Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
+  {"role": "BuildPolaris Document Controller", "read": 1, "write": 1, "create": 1},
   {"role": "BuildPolaris Accounting", "read": 1, "write": 1, "create": 1},
   {"role": "BuildPolaris Project Manager", "read": 1},
   {"role": "BuildPolaris Owner", "read": 1}

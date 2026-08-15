@@ -6,7 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series", "commitment", "project", "period_end", "retainage_pct",
-  "column_break_1", "status", "purchase_invoice", "payment_entry",
+  "column_break_1", "status", "is_final", "purchase_invoice", "payment_entry",
   "section_break_lines", "lines"
  ],
  "fields": [
@@ -17,6 +17,7 @@
   {"fieldname": "retainage_pct", "fieldtype": "Percent", "label": "Retainage %", "default": "10"},
   {"fieldname": "column_break_1", "fieldtype": "Column Break"},
   {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Draft\nPendingApproval\nApproved\nRejected\nPaid", "default": "Draft", "in_list_view": 1},
+  {"fieldname": "is_final", "fieldtype": "Check", "label": "Is Final Payment", "description": "FR-7.5: when checked, approval is blocked by the Project's closeout gate (punch items closed + closeout documents collected).", "in_list_view": 1},
   {"fieldname": "purchase_invoice", "fieldtype": "Link", "label": "Purchase Invoice", "options": "Purchase Invoice", "read_only": 1},
   {"fieldname": "payment_entry", "fieldtype": "Link", "label": "Payment Entry", "options": "Payment Entry", "read_only": 1},
   {"fieldname": "section_break_lines", "fieldtype": "Section Break", "label": "Schedule of Values"},

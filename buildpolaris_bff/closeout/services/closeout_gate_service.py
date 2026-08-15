@@ -1,58 +1,75 @@
+"""
+FR-7.5: closeout gates - final payment cannot issue until all Punch List
+items are closed and all required Closeout Document categories are
+collected. Cross-module invariant kept as SERVICE-LAYER CALLS into
+field/financials, never a direct SQL join across module boundaries
+(NFR-EXT.1).
+"""
 import frappe
-from frappe.utils import now_datetime
 
-def initiate_closeout(project: str, project_has_payment_bond: int = 0):
-    existing = frappe.get_all("Closing Record", filters={"project": project}, limit=1)
-    if existing: frappe.throw(f"Closeout already initiated for this project: {existing[0].name}")
-    closing = frappe.get_doc({"doctype": "Closing Record", "project": project, "status": "Initiated", "project_has_payment_bond": project_has_payment_bond, "initiated_at": now_datetime()}).insert(ignore_permissions=True)
-    return closing.name
+from buildpolaris_bff.shared.exceptions import CloseoutGateError
+from buildpolaris_bff.shared.permissions import assert_project_permission, assert_role
+from buildpolaris_bff.field.services.punch_list_service import list_punch_items
+from buildpolaris_bff.financials.services.financial_close_service import has_unresolved_financial_items
 
-def issue_substantial_completion(project: str, substantial_completion_date: str, responsibility_terms: str = None):
-    closing_records = frappe.get_all("Closing Record", filters={"project": project}, limit=1)
-    if not closing_records: frappe.throw("Closeout must be initiated before issuing Substantial Completion")
-    closing = frappe.get_doc("Closing Record", closing_records[0].name)
-    open_punch_items = frappe.get_all("Punch List Item", filters={"project": project, "status": ["!=", "Closed"]}, fields=["name", "title", "priority", "status"])
-    punch_snapshot = "\n".join([f"- {item.title} ({item.priority}, {item.status})" for item in open_punch_items]) if open_punch_items else "No open punch items at time of issuance."
-    cert = frappe.get_doc({"doctype": "Substantial Completion Certificate", "project": project, "closing_record": closing.name, "substantial_completion_date": substantial_completion_date, "warranty_start_date": substantial_completion_date, "responsibility_terms": responsibility_terms, "punch_snapshot": punch_snapshot, "status": "PendingSignature", "pm_initiated_by": frappe.session.user}).insert(ignore_permissions=True)
-    closing.substantial_completion_certificate = cert.name
-    closing.status = "SubstantialComplete"
-    closing.save(ignore_permissions=True)
-    return cert.name
+REQUIRED_DOCUMENT_CATEGORIES = {"OMManual", "Warranty", "ConsentOfSurety", "ContractorAffidavit"}
 
-def sign_substantial_completion(certificate_id: str, signer_role: str, signer_user: str = None):
-    cert = frappe.get_doc("Substantial Completion Certificate", certificate_id)
-    if cert.status == "Signed": frappe.throw("Certificate is already fully signed")
-    signer = signer_user or frappe.session.user
-    now = now_datetime()
-    if signer_role == "Owner":
-        if cert.owner_signed_at: frappe.throw("Owner has already signed")
-        cert.owner_signed_by = signer; cert.owner_signed_at = now
-    elif signer_role == "Architect":
-        if cert.architect_signed_at: frappe.throw("Architect has already signed")
-        cert.architect_signed_by = signer; cert.architect_signed_at = now
-    else: frappe.throw(f"Invalid signer role: {signer_role}")
-    cert.save(ignore_permissions=True)
-    return {"status": "success", "certificate_status": cert.status}
 
-def check_final_completion_gate(project: str):
-    open_items = frappe.get_all("Punch List Item", filters={"project": project, "status": ["!=", "Closed"]}, fields=["name", "title", "priority", "status"])
-    if open_items: return {"cleared": False, "open_count": len(open_items), "blockers": open_items}
-    closing_records = frappe.get_all("Closing Record", filters={"project": project}, limit=1)
-    if closing_records:
-        closing = frappe.get_doc("Closing Record", closing_records[0].name)
-        closing.punch_gate_cleared = 1
-        closing.save(ignore_permissions=True)
-    return {"cleared": True, "open_count": 0, "blockers": []}
+def check_finalize_gate(closing_record: str, user: str | None = None) -> dict:
+	"""Returns {"can_finalize": bool, "blockers": [...]}. Never a silent
+	pass/fail - every blocking reason is enumerated for the UI to show."""
+	doc = frappe.get_doc("Closing Record", closing_record)
+	assert_project_permission(doc.project, ptype="read", user=user)
 
-def release_final_retainage(project: str):
-    closing_records = frappe.get_all("Closing Record", filters={"project": project}, limit=1)
-    if not closing_records: frappe.throw("Closeout must be initiated")
-    closing = frappe.get_doc("Closing Record", closing_records[0].name)
-    if not closing.punch_gate_cleared: frappe.throw("Punch Gate must be cleared")
-    if not frappe.get_all("Contractors Affidavit", filters={"project": project}, limit=1): frappe.throw("Affidavit required")
-    if not frappe.get_all("Lien Waiver", filters={"project": project, "is_final": 1}, limit=1): frappe.throw("Final Waiver required")
-    if closing.project_has_payment_bond and not frappe.get_all("Consent Of Surety", filters={"project": project}, limit=1): frappe.throw("Surety Consent required")
-    closing.status = "FinalComplete"
-    closing.completed_at = now_datetime()
-    closing.save(ignore_permissions=True)
-    return {"status": "success", "closing_record": closing.name, "completed_at": str(closing.completed_at)}
+	blockers = []
+
+	open_punch_items = [p for p in list_punch_items(doc.project, user=user) if p.status != "Closed"]
+	if open_punch_items:
+		blockers.append(f"{len(open_punch_items)} Punch List item(s) still open.")
+
+	if has_unresolved_financial_items(doc.project):
+		blockers.append("Unresolved financial items (Draft/Pending Commitments, Change Events, or Pay Applications).")
+
+	existing_categories = {
+		d.category for d in frappe.get_all(
+			"Closeout Document", filters={"closing_record": closing_record}, fields=["category"]
+		)
+	}
+	missing_categories = REQUIRED_DOCUMENT_CATEGORIES - existing_categories
+	if missing_categories:
+		blockers.append(f"Missing closeout document categories: {', '.join(sorted(missing_categories))}.")
+
+	if doc.status != "SubstantiallyComplete":
+		blockers.append("Substantial Completion Certificate not yet fully signed.")
+
+	return {"can_finalize": not blockers, "blockers": blockers}
+
+
+def finalize_closing_record(closing_record: str, finalized_by: str | None = None):
+	"""The actual gate enforcement - raises CloseoutGateError enumerating
+	every blocking reason rather than a generic 'denied' (FR-7.5)."""
+	finalized_by = finalized_by or frappe.session.user
+	doc = frappe.get_doc("Closing Record", closing_record)
+	assert_project_permission(doc.project, ptype="write", user=finalized_by)
+	assert_role("BuildPolaris Project Manager", "BuildPolaris Accounting", "BuildPolaris Admin", user=finalized_by)
+
+	gate = check_finalize_gate(closing_record, user=finalized_by)
+	if not gate["can_finalize"]:
+		raise CloseoutGateError("Cannot finalize closeout: " + "; ".join(gate["blockers"]))
+
+	doc.status = "Finalized"
+	doc.flags.via_gate = True
+	doc.save()
+	return doc.as_dict()
+
+
+def check_final_payment_gate(project: str, user: str | None = None) -> dict:
+	"""Used by financials/services/pay_application_service.py when
+	approving a Pay Application flagged is_final=1 - the literal FR-7.5
+	example ('final payment cannot issue until...')."""
+	closing_record = frappe.db.get_value("Closing Record", {"project": project}, "name")
+	if not closing_record:
+		return {"can_pay": False, "blockers": ["No Closing Record has been opened for this Project yet."]}
+
+	gate = check_finalize_gate(closing_record, user=user)
+	return {"can_pay": gate["can_finalize"], "blockers": gate["blockers"]}

@@ -1,6 +1,8 @@
 """FR-3.5: AIA G702/G703-style Pay Applications billed against a
 Commitment. Approval generates a native Purchase Invoice with retainage as
-a held-back Payment Term; payment generates a Payment Entry."""
+a held-back Payment Term; payment generates a Payment Entry. FR-7.5: a
+Pay Application flagged is_final=1 is blocked from approval until the
+Project's closeout gate clears."""
 import frappe
 from frappe.utils import flt
 
@@ -9,12 +11,12 @@ from buildpolaris_bff.shared.erpnext_adapter import (
 	create_purchase_invoice_with_retainage,
 	get_or_create_billing_item,
 )
-from buildpolaris_bff.shared.exceptions import ValidationError
+from buildpolaris_bff.shared.exceptions import CloseoutGateError, ValidationError
 from buildpolaris_bff.shared.permissions import assert_project_permission, assert_role
 from buildpolaris_bff.shared.security_log import log_security_event
 
 
-def create_pay_application(commitment, period_end, lines, retainage_pct=10, created_by=None):
+def create_pay_application(commitment, period_end, lines, retainage_pct=10, is_final=0, created_by=None):
 	"""lines: [{cost_code, scheduled_value, work_completed_this_period, materials_stored}]"""
 	created_by = created_by or frappe.session.user
 	commitment_doc = frappe.get_doc("Commitment", commitment)
@@ -31,6 +33,7 @@ def create_pay_application(commitment, period_end, lines, retainage_pct=10, crea
 		"project": commitment_doc.project,
 		"period_end": period_end,
 		"retainage_pct": retainage_pct,
+		"is_final": 1 if is_final else 0,
 		"status": "Draft",
 	})
 	for line in lines:
@@ -62,7 +65,9 @@ def submit_for_approval(pay_application: str, submitted_by: str | None = None):
 
 def approve_pay_application(pay_application: str, approved_by: str | None = None):
 	"""FR-3.5: approval generates a native Purchase Invoice with retainage
-	as a held-back Payment Term."""
+	as a held-back Payment Term. FR-7.5: if is_final, the Project's
+	closeout gate must clear first - the literal 'final payment cannot
+	issue until...' example."""
 	approved_by = approved_by or frappe.session.user
 	assert_role("BuildPolaris Accounting", "BuildPolaris Admin", user=approved_by)
 
@@ -71,6 +76,14 @@ def approve_pay_application(pay_application: str, approved_by: str | None = None
 
 	if doc.status != "PendingApproval":
 		raise ValidationError(f"Pay Application must be PendingApproval to approve (current: {doc.status}).")
+
+	if doc.is_final:
+		from buildpolaris_bff.closeout.services.closeout_gate_service import check_final_payment_gate
+		gate = check_final_payment_gate(doc.project, user=approved_by)
+		if not gate["can_pay"]:
+			raise CloseoutGateError(
+				"Cannot approve final payment: " + "; ".join(gate["blockers"])
+			)
 
 	commitment_doc = frappe.get_doc("Commitment", doc.commitment)
 	company = frappe.db.get_value("Project", doc.project, "company")
@@ -95,7 +108,9 @@ def approve_pay_application(pay_application: str, approved_by: str | None = None
 	doc.status = "Approved"
 	doc.save()
 
-	log_security_event("PAY_APPLICATION_APPROVED", {"pay_application": pay_application, "purchase_invoice": pi_name})
+	log_security_event("PAY_APPLICATION_APPROVED", {
+		"pay_application": pay_application, "purchase_invoice": pi_name, "is_final": bool(doc.is_final),
+	})
 	frappe.db.commit()
 	return doc.as_dict()
 
