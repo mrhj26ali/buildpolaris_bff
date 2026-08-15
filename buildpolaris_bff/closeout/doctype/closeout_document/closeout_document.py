@@ -1,5 +1,5 @@
 from frappe.model.document import Document
 
 
-class LienWaiver(Document):
+class CloseoutDocument(Document):
 	pass

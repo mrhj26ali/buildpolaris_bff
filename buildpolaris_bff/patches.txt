@@ -6,3 +6,5 @@
 buildpolaris_bff.patches.v1_0.add_scheduling_custom_fields
 buildpolaris_bff.patches.v1_0.apply_role_permissions
 buildpolaris_bff.patches.v1_0.add_client_uuid_fields
+buildpolaris_bff.patches.v1_0.add_retention_custom_fields
+buildpolaris_bff.patches.v1_0.add_closeout_print_format

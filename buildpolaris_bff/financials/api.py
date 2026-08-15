@@ -63,10 +63,12 @@ def reject_change_event(change_event):
 
 
 @frappe.whitelist()
-def create_pay_application(commitment, period_end, lines, retainage_pct=10):
+def create_pay_application(commitment, period_end, lines, retainage_pct=10, is_final=0):
 	if isinstance(lines, str):
 		lines = frappe.parse_json(lines)
-	return success(pay_application_service.create_pay_application(commitment, period_end, lines, float(retainage_pct)))
+	return success(pay_application_service.create_pay_application(
+		commitment, period_end, lines, float(retainage_pct), int(is_final)
+	))
 
 
 @frappe.whitelist()

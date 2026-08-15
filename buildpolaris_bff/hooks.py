@@ -29,7 +29,7 @@ before_request = [
 scheduler_events = {
 	"daily": [
 		"buildpolaris_bff.config.jobs.escalate_overdue_communications",   # FR-4.5 (implemented)
-		"buildpolaris_bff.config.jobs.closeout_lookahead_digest",          # M7 (Closeout phase - body pending)
+		"buildpolaris_bff.config.jobs.closeout_lookahead_digest",          # M7 (implemented)
 		"buildpolaris_bff.financials.services.evm_service.capture_nightly_snapshot",  # FR-3.7 (implemented)
 	],
 	"hourly": [

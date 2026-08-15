@@ -17,9 +17,33 @@ def escalate_overdue_communications():
 
 
 def closeout_lookahead_digest():
-	"""Closeout phase: look-ahead digests to PM/Owner ahead of Substantial
-	Completion (FR-7.x). Implemented in the Closeout phase."""
-	pass
+	"""M7: daily reminder to each open Closing Record's PM/Owner while
+	closeout-gate blockers remain, so closeout doesn't silently stall
+	waiting on a document nobody remembered to chase."""
+	from buildpolaris_bff.closeout.services.closeout_gate_service import check_finalize_gate
+
+	records = frappe.get_all("Closing Record", filters={"status": ["!=", "Finalized"]}, fields=["name", "project"])
+	for r in records:
+		try:
+			gate = check_finalize_gate(r.name, user="Administrator")
+			if not gate["blockers"]:
+				continue
+			pm_users = frappe.get_all(
+				"User Permission", filters={"allow": "Project", "for_value": r.project}, pluck="user",
+			)
+			for user in set(pm_users):
+				frappe.get_doc({
+					"doctype": "Notification Log",
+					"for_user": user,
+					"type": "Alert",
+					"document_type": "Closing Record",
+					"document_name": r.name,
+					"subject": f"Closeout blocked on {r.project}",
+					"email_content": "; ".join(gate["blockers"]),
+				}).insert(ignore_permissions=True)
+		except Exception:
+			frappe.log_error(title=f"Closeout digest failed for {r.name}", message=frappe.get_traceback())
+	frappe.db.commit()
 
 
 def schedule_health_check():
