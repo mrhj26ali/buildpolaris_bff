@@ -23,6 +23,7 @@ import frappe
 from frappe.utils import now_datetime
 
 from buildpolaris_bff.shared.exceptions import AISidecarUnavailableError
+from buildpolaris_bff.shared.scope_assertion import mint_scope_assertion
 from buildpolaris_bff.shared.security_log import get_trace_id, log_structured
 
 ELIGIBLE_SOURCE_DOCTYPES = {"Commitment", "Submittal Package", "RFI"}
@@ -74,11 +75,11 @@ def on_file_after_insert(doc, method=None):
 	frappe.enqueue(
 		"buildpolaris_bff.ai_copilot.services.ingestion_trigger_service.run_ingestion_job",
 		queue="long", enqueue_after_commit=True,
-		ai_document_index=index_doc.name, trace_id=get_trace_id(),
+		ai_document_index=index_doc.name, user=frappe.session.user, trace_id=get_trace_id(),
 	)
 
 
-def run_ingestion_job(ai_document_index: str, trace_id: str | None = None):
+def run_ingestion_job(ai_document_index: str, user: str | None = None, trace_id: str | None = None):
 	"""Background job (Redis/RQ, ARCH §1.1: no message broker - a plain
 	enqueued job)."""
 	index_doc = frappe.get_doc("AI Document Index", ai_document_index)
@@ -90,7 +91,12 @@ def run_ingestion_job(ai_document_index: str, trace_id: str | None = None):
 		file_doc = frappe.get_doc("File", index_doc.file)
 		content = file_doc.get_content()
 		project = frappe.db.get_value(index_doc.source_doctype, index_doc.source_name, "project")
-		company = frappe.db.get_value("Project", project, "company") if project else None
+		# See entity_mirror_service.py's matching comment: company MUST come
+		# from the same source mint_scope_assertion() uses (the acting
+		# user's bp_company), since buildpolaris_ai's /ingest rejects the
+		# request outright on any company/assertion mismatch.
+		acting_user = user or "Administrator"
+		company = _resolve_company_for_user(acting_user)
 
 		result = _call_ai_sidecar("/ingest", {
 			"file_id": index_doc.file,
@@ -101,8 +107,7 @@ def run_ingestion_job(ai_document_index: str, trace_id: str | None = None):
 			"project": project,
 			"file_name": file_doc.file_name,
 			"content_b64": base64.b64encode(content if isinstance(content, bytes) else content.encode("utf-8")).decode("ascii"),
-			"trace_id": trace_id or get_trace_id(),
-		})
+		}, acting_user=acting_user, project=project, trace_id=trace_id or get_trace_id())
 
 		if result.get("status") == "Indexed":
 			index_doc.status = "Indexed"
@@ -131,13 +136,29 @@ def run_ingestion_job(ai_document_index: str, trace_id: str | None = None):
 		frappe.db.commit()
 
 
-def _call_ai_sidecar(path: str, json_body: dict) -> dict:
+def _resolve_company_for_user(user: str) -> str | None:
+	if not frappe.db.has_column("User", "bp_company"):
+		return None
+	return frappe.db.get_value("User", user, "bp_company")
+
+
+def _call_ai_sidecar(path: str, json_body: dict, acting_user: str, project: str | None,
+                      trace_id: str | None = None) -> dict:
+	"""ARCH §4.2 Direction 1 - see copilot_gateway_service.py's
+	_stream_ai_sidecar() docstring for why this is X-Service-Key /
+	X-Scope-Assertion headers, not Frappe token auth. The Scope Assertion
+	is minted for whichever user uploaded the File (falling back to
+	Administrator only if that's genuinely unavailable), matching the
+	`company` value already resolved from that same user's bp_company."""
 	base_url = frappe.conf.get("buildpolaris_ai_base_url")
 	if not base_url:
 		raise AISidecarUnavailableError("buildpolaris_ai_base_url is not configured in site_config.json.")
 
-	api_key = frappe.conf.get("buildpolaris_ai_service_api_key")
-	api_secret = frappe.conf.get("buildpolaris_ai_service_api_secret")
+	service_key = frappe.conf.get("buildpolaris_ai_service_key")
+	if not service_key:
+		raise AISidecarUnavailableError("buildpolaris_ai_service_key is not configured in site_config.json.")
+
+	scope_assertion = mint_scope_assertion(project=project, user=acting_user)
 
 	import requests
 	try:
@@ -145,12 +166,13 @@ def _call_ai_sidecar(path: str, json_body: dict) -> dict:
 			f"{base_url.rstrip('/')}{path}",
 			json=json_body,
 			headers={
-				"Authorization": f"token {api_key}:{api_secret}" if api_key else "",
-				"X-BP-Trace-Id": json_body.get("trace_id") or get_trace_id(),
+				"X-Service-Key": service_key,
+				"X-Scope-Assertion": scope_assertion,
+				"X-BP-Trace-Id": trace_id or get_trace_id(),
 			},
 			timeout=120,  # extraction/embedding can legitimately take longer than a chat turn
 		)
 		response.raise_for_status()
 		return response.json()
 	except Exception as exc:
-		raise AISidecarUnavailableError(str(exc))
+		raise AISidecarUnavailableError(str(exc)) from exc

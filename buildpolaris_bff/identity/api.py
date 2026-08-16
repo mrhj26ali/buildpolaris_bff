@@ -5,7 +5,7 @@ calls exactly one services/ function - no business logic lives here.
 """
 import frappe
 
-from buildpolaris_bff.shared.api_envelope import success
+from buildpolaris_bff.shared.api_envelope import success, api_guard
 from buildpolaris_bff.shared.exceptions import RateLimitedError
 from buildpolaris_bff.shared.rate_limit import is_rate_limited
 from buildpolaris_bff.identity.services import (
@@ -18,6 +18,7 @@ from buildpolaris_bff.identity.services import (
 
 
 @frappe.whitelist(allow_guest=True)
+@api_guard
 def register_tenant(company_name: str, admin_email: str, admin_full_name: str,
                      country: str = "United States", default_currency: str = "USD"):
 	"""FR-1.1. Unauthenticated - rate-limited against enumeration/brute-force
@@ -31,6 +32,7 @@ def register_tenant(company_name: str, admin_email: str, admin_full_name: str,
 
 
 @frappe.whitelist(allow_guest=True)
+@api_guard
 def activate_account(user: str, token: str, new_password: str):
 	"""FR-1.1. Unauthenticated - rate-limited (NFR-SEC.6)."""
 	if is_rate_limited(f"activate:{user}", limit=10, seconds=600):
@@ -40,6 +42,7 @@ def activate_account(user: str, token: str, new_password: str):
 
 
 @frappe.whitelist()
+@api_guard
 def invite_user(email: str, full_name: str, role: str, company: str):
 	"""FR-1.2. Role: Admin (asserted inside invitation_service.invite_user)."""
 	result = invitation_service.invite_user(email, full_name, role, company)
@@ -47,6 +50,7 @@ def invite_user(email: str, full_name: str, role: str, company: str):
 
 
 @frappe.whitelist(allow_guest=True)
+@api_guard
 def accept_invite(user: str, token: str, new_password: str):
 	"""FR-1.2. Unauthenticated - rate-limited (NFR-SEC.6)."""
 	if is_rate_limited(f"accept_invite:{user}", limit=10, seconds=600):
@@ -56,6 +60,7 @@ def accept_invite(user: str, token: str, new_password: str):
 
 
 @frappe.whitelist()
+@api_guard
 def assign_project(user: str, project: str):
 	"""FR-1.3. Role: Admin or Project Manager."""
 	result = invitation_service.assign_project(user, project)
@@ -63,6 +68,7 @@ def assign_project(user: str, project: str):
 
 
 @frappe.whitelist()
+@api_guard
 def set_user_role(user: str, role: str, company: str):
 	"""FR-1.4. Role: Admin. Guards against demoting the last Admin."""
 	result = role_service.set_user_role(user, role, company)
@@ -70,6 +76,7 @@ def set_user_role(user: str, role: str, company: str):
 
 
 @frappe.whitelist()
+@api_guard
 def deactivate_user(user: str, company: str):
 	"""FR-1.7. Role: Admin. Deactivates - never hard-deletes."""
 	result = role_service.deactivate_user(user, company)
@@ -77,6 +84,7 @@ def deactivate_user(user: str, company: str):
 
 
 @frappe.whitelist()
+@api_guard
 def get_session_context():
 	"""FR-1.5. Role: any authenticated user - returns only the caller's own
 	context."""
@@ -84,6 +92,7 @@ def get_session_context():
 
 
 @frappe.whitelist()
+@api_guard
 def get_change_history(doctype: str, name: str):
 	"""FR-1.6. Role: any user with read access to the target document -
 	enforced inside shared/audit.get_history via frappe.has_permission."""

@@ -13,7 +13,7 @@ transport hosted at ai_copilot/mcp/mcp_server.py (ARCH §4.4).
 """
 import frappe
 
-from buildpolaris_bff.shared.api_envelope import success
+from buildpolaris_bff.shared.api_envelope import success, api_guard
 from buildpolaris_bff.shared.scope_assertion import verify_scope_assertion
 from buildpolaris_bff.ai_copilot.services import (
 	audit_service,
@@ -28,16 +28,23 @@ from buildpolaris_bff.ai_copilot.services import (
 # ---------------------------------------------------------------------------
 
 @frappe.whitelist()
-def send_copilot_message(message, thread_id=None, project=None):
-	return success(copilot_gateway_service.send_message(message, thread_id, project))
+@api_guard
+def send_message(text, thread_id=None, project=None):
+	"""Streams back text/event-stream, not the standard {success,data,...}
+	envelope -- see copilot_gateway_service.send_message()'s docstring.
+	buildpolaris_pwa's sse.ts calls this exact dotted path with body
+	{thread_id, text, project}."""
+	return copilot_gateway_service.send_message(text, thread_id, project)
 
 
 @frappe.whitelist()
+@api_guard
 def list_copilot_threads():
 	return success(copilot_gateway_service.list_threads())
 
 
 @frappe.whitelist()
+@api_guard
 def list_copilot_messages(thread_id):
 	return success(copilot_gateway_service.list_thread_messages(thread_id))
 
@@ -47,16 +54,19 @@ def list_copilot_messages(thread_id):
 # ---------------------------------------------------------------------------
 
 @frappe.whitelist()
+@api_guard
 def list_pending_approvals(project=None):
 	return success(proposal_service.list_pending(project))
 
 
 @frappe.whitelist()
+@api_guard
 def approve_agent_action(action):
 	return success(approval_service.approve(action))
 
 
 @frappe.whitelist()
+@api_guard
 def reject_agent_action(action, reason=None):
 	return success(approval_service.reject(action, reason))
 
@@ -66,6 +76,7 @@ def reject_agent_action(action, reason=None):
 # ---------------------------------------------------------------------------
 
 @frappe.whitelist()
+@api_guard
 def get_ingestion_status(source_doctype, source_name):
 	if not frappe.has_permission(source_doctype, "read", source_name):
 		frappe.throw("Forbidden", frappe.PermissionError)
@@ -78,6 +89,7 @@ def get_ingestion_status(source_doctype, source_name):
 
 
 @frappe.whitelist()
+@api_guard
 def get_agent_mutation_history(doctype, name):
 	return success(audit_service.get_mutation_history(doctype, name))
 
@@ -87,6 +99,7 @@ def get_agent_mutation_history(doctype, name):
 # ---------------------------------------------------------------------------
 
 @frappe.whitelist()
+@api_guard
 def propose_agent_action(agent_type, target_doctype, payload, scope_assertion,
                           model_version=None, confidence=None, tool_trace_id=None,
                           idempotency_key=None):
