@@ -1,4 +1,5 @@
 Identity
+Projects
 Scheduling
 Financials
 Communications

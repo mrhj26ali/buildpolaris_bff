@@ -11,10 +11,16 @@ from buildpolaris_bff.ai_copilot.mcp.tools import (
 	communication_tools,
 	field_tools,
 	financial_tools,
+	project_tools,
 	scheduling_tools,
 )
 
 TOOLS = {
+	"get_project_summary": {
+		"fn": project_tools.get_project_summary,
+		"description": "Cross-module dashboard summary for a Project (schedule health, open RFIs/submittals/punch items, CPI/SPI, next milestone).",
+		"input_schema": {"type": "object", "properties": {"project": {"type": "string"}}, "required": ["project"]},
+	},
 	"get_schedule_state": {
 		"fn": scheduling_tools.get_schedule_state,
 		"description": "List a Project's Tasks with CPM outputs (critical path, float, dates).",

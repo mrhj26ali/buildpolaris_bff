@@ -46,6 +46,6 @@ def list_tasks(project: str, user: str | None = None):
 		filters={"project": project},
 		fields=["name", "subject", "exp_start_date", "exp_end_date", "duration", "progress",
 		        "is_group", "parent_task", "early_start", "early_finish", "late_start",
-		        "late_finish", "total_float", "is_critical", "wbs_code", "activity_type"],
+		        "late_finish", "total_float", "is_critical", "wbs_code", "activity_type", "status"],
 		order_by="exp_start_date asc",
 	)
