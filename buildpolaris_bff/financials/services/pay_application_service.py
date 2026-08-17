@@ -135,3 +135,11 @@ def record_payment(pay_application: str, paid_amount: float | None = None, recor
 	log_security_event("PAY_APPLICATION_PAID", {"pay_application": pay_application, "payment_entry": pe_name})
 	frappe.db.commit()
 	return doc.as_dict()
+def list_pay_applications(project):
+	from buildpolaris_bff.shared.permissions import assert_project_permission
+	assert_project_permission(project, ptype="read")
+	return frappe.get_all("Pay Application",
+		filters={"project": project},
+		fields=["name", "commitment", "period_end", "retainage_pct", "status", "is_final", "creation"],
+		order_by="period_end desc",
+	)

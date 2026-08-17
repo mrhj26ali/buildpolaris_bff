@@ -122,3 +122,7 @@ def list_action_items(project, status=None):
 @api_guard
 def search_communications(project, status=None, assignee=None):
 	return success(dashboard_search_service.search_communications(project, status, assignee))
+@frappe.whitelist()
+@api_guard
+def list_meeting_series(project):
+	return success(meeting_service.list_series(project))

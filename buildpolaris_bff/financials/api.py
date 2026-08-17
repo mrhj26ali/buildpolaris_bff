@@ -102,8 +102,17 @@ def record_payment(pay_application, paid_amount=None):
 
 @frappe.whitelist()
 @api_guard
-def get_evm(project, as_of_date=None):
-	return success(evm_service.compute_evm(project, as_of_date))
+def get_evm_snapshot(project, as_of_date=None):
+	"""buildpolaris_pwa's financialsApi.ts/EvmDashboard.tsx call this exact
+	dotted path expecting {project, planned_value, earned_value,
+	actual_cost, cpi, spi, as_of} (types/domain.ts's EvmSnapshot) - a
+	live-computed point-in-time snapshot, not the separate write-only
+	EVM Snapshot trend doctype (financials/services/evm_service.py's
+	own docstring: 'computed on read, never cached... EVM Snapshot is a
+	SEPARATE trend table, never read back into this path')."""
+	evm = evm_service.compute_evm(project, as_of_date)
+	evm["as_of"] = evm.pop("as_of_date")
+	return success(evm)
 
 
 @frappe.whitelist()
@@ -122,3 +131,19 @@ def create_offsetting_change_event(original_change_event, reason):
 @api_guard
 def get_amendment_history(doctype, name):
 	return success(amendment_service.get_amendment_history(doctype, name))
+@frappe.whitelist()
+@api_guard
+def list_commitments(project):
+	return success(commitment_service.list_commitments(project))
+
+
+@frappe.whitelist()
+@api_guard
+def list_change_events(project):
+	return success(change_event_service.list_change_events(project))
+
+
+@frappe.whitelist()
+@api_guard
+def list_pay_applications(project):
+	return success(pay_application_service.list_pay_applications(project))

@@ -51,7 +51,9 @@ def sign_as_owner(certificate: str, signer: str | None = None):
 	return doc.as_dict()
 
 
-def record_architect_signoff(certificate: str, architect_name: str, recorded_by: str | None = None):
+# Change this line:
+def record_architect_signoff(certificate: str, architect_name: str = "Architect of Record", recorded_by: str | None = None):
+    # ... rest of the function remains exactly the same ...
 	"""The Architect of Record is typically not a platform User (ERD §3.5:
 	free-text field) - a PM or Owner records the name on their behalf."""
 	recorded_by = recorded_by or frappe.session.user

@@ -94,3 +94,29 @@ def finalize_closing_record(closing_record):
 @api_guard
 def export_closeout_package(closing_record):
 	return success(closeout_export_service.export_closeout_package(closing_record))
+@frappe.whitelist()
+@api_guard
+def get_substantial_completion(closing_record):
+    """Fetch the Substantial Completion Certificate by its parent Closing Record."""
+    cert_name = frappe.db.get_value("Substantial Completion Certificate", {"closing_record": closing_record}, "name")
+    if not cert_name:
+        return success(None)
+    return success(frappe.get_doc("Substantial Completion Certificate", cert_name).as_dict())
+
+@frappe.whitelist()
+@api_guard
+def sign_substantial_completion(closing_record, signoff_role):
+    """Unified sign-off endpoint routed to the correct service based on role."""
+    cert_name = frappe.db.get_value("Substantial Completion Certificate", {"closing_record": closing_record}, "name")
+    if not cert_name:
+        frappe.throw("No Substantial Completion Certificate found for this Closing Record.", frappe.DoesNotExistError)
+    
+    if signoff_role == "pm":
+        return success(substantial_completion_service.sign_as_pm(cert_name))
+    elif signoff_role == "owner":
+        return success(substantial_completion_service.sign_as_owner(cert_name))
+    elif signoff_role == "architect":
+        # Defaulting architect name if not provided by the PWA payload
+        return success(substantial_completion_service.record_architect_signoff(cert_name, architect_name="Architect of Record"))
+    else:
+        frappe.throw("Invalid signoff_role. Must be 'pm', 'owner', or 'architect'.")

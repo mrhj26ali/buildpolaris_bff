@@ -8,6 +8,14 @@ Copilot Thread / Copilot Message are deliberately NOT in this matrix - their
 if_owner-scoped permissions are defined directly in their own doctype JSON
 (a generic role->access-level matrix has no if_owner concept), and this
 patch only ever touches doctypes it's explicitly told about.
+
+Account Activation Token is also deliberately NOT in this matrix - it holds
+hashed single-use tokens (shared/crypto_utils.py, NFR-SEC.3) and is written
+exclusively via ignore_permissions=True service calls
+(registration_service.py / invitation_service.py); no BuildPolaris Role,
+including Admin, should be able to browse or query it directly. Leaving it
+out of the matrix means it keeps Frappe's own default (System Manager /
+Administrator only), which is exactly the intended posture.
 """
 
 import json
@@ -30,6 +38,16 @@ READ_ACCESS = {"read": 1, "email": 1, "export": 1, "print": 1, "report": 1}
 
 PERMISSION_MATRIX = {
 	"Project": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SITE_SUPERINTENDENT: READ_ACCESS, ROLE_SAFETY_OFFICER: READ_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
+	# Native ERPNext doctype, same as Project - the WBS lives here per ERD
+	# ("Task (under Project), extended with custom fields, never a shadow
+	# schedule table"), so it needs the same explicit BuildPolaris-owned
+	# permission set every other doctype gets; stock ERPNext ships its own
+	# Task permissions (Projects User/Manager) which this replaces, same as
+	# Project. Site Superintendent gets WRITE (not just READ, unlike
+	# Task Dependency below) - field logging of day-to-day task progress
+	# against the schedule is a normal part of that role, matching the
+	# WRITE access it already has on Daily Log.
+	"Task": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SITE_SUPERINTENDENT: WRITE_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
 	"Task Dependency": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SITE_SUPERINTENDENT: READ_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
 	"Schedule Baseline": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SITE_SUPERINTENDENT: READ_ACCESS},
 	"Cost Code": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: WRITE_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
@@ -61,6 +79,18 @@ PERMISSION_MATRIX = {
 	"Agent Action Approval": {ROLE_ADMIN: FULL_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: WRITE_ACCESS, ROLE_OWNER: WRITE_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS},
 	"Agent Mutation Log": {ROLE_ADMIN: FULL_ACCESS, ROLE_PROJECT_MANAGER: READ_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_ACCOUNTING: READ_ACCESS},
 	"AI Document Index": {ROLE_ADMIN: FULL_ACCESS, ROLE_PROJECT_MANAGER: READ_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_ACCOUNTING: READ_ACCESS, ROLE_DOCUMENT_CONTROLLER: READ_ACCESS, ROLE_SUBCONTRACTOR: READ_ACCESS},
+	# Closeout Document is a real top-level doctype (not a child table -
+	# unlike Media Capture and RFI Watcher, which both have istable=1 and
+	# are correctly excluded from this matrix per the module docstring
+	# above). It's Closing Record's attached-files collection, so it
+	# mirrors Closing Record's own access pattern exactly.
+	# Populated only by evm_service.capture_nightly_snapshot() today (no
+	# read endpoint exists yet) - permissioned now anyway so a future
+	# trend-chart feature isn't blocked by a second missing-permission
+	# gap, consistent with these roles' access to the live
+	# get_evm_snapshot endpoint above.
+	"EVM Snapshot": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: READ_ACCESS, ROLE_ACCOUNTING: READ_ACCESS},
+	"Closeout Document": {ROLE_ADMIN: FULL_ACCESS, ROLE_OWNER: READ_ACCESS, ROLE_PROJECT_MANAGER: WRITE_ACCESS, ROLE_ACCOUNTING: WRITE_ACCESS, ROLE_DOCUMENT_CONTROLLER: WRITE_ACCESS},
 }
 
 

@@ -79,3 +79,11 @@ def reject_change_event(change_event: str, rejected_by: str | None = None):
 	doc.is_immutable = 1
 	doc.save()
 	return doc.as_dict()
+def list_change_events(project):
+	from buildpolaris_bff.shared.permissions import assert_project_permission
+	assert_project_permission(project, ptype="read")
+	return frappe.get_all("Change Event",
+		filters={"project": project},
+		fields=["name", "commitment", "category", "amount_delta", "outcome_reason", "status", "creation"],
+		order_by="creation desc",
+	)

@@ -88,3 +88,11 @@ def get_committed_total(cost_code: str) -> float:
 		cost_code,
 	)
 	return float(result[0][0]) if result else 0.0
+def list_commitments(project):
+	from buildpolaris_bff.shared.permissions import assert_project_permission
+	assert_project_permission(project, ptype="read")
+	return frappe.get_all("Commitment",
+		filters={"project": project},
+		fields=["name", "cost_code", "supplier", "type", "original_amount", "revised_amount", "status", "creation"],
+		order_by="creation desc",
+	)

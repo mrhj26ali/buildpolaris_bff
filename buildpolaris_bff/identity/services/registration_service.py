@@ -1,6 +1,17 @@
 """
 FR-1.1: prospect self-registration -> isolated ERPNext Company + disabled
 Admin account pending activation via a single-use, hashed, time-boxed token.
+
+Activation is deliberately TOKEN-ONLY (no `user` parameter) - the PWA's
+ActivateAccountPage.tsx only ever has a `?token=` query param on the
+activation link (there's no companion `user`/`email` param sent), and the
+exact same page/flow is shared by both self-registration activation and
+invited-user activation (see invitation_service.accept_invite, which
+delegates to the same lookup below). A raw activation token is already
+high-entropy (crypto_utils.generate_secure_token) and short-lived, so a
+hash lookup across the (small, time-boxed) set of pending tokens rather
+than a single indexed row is an acceptable, deliberate trade-off - this
+is the same trust model most "magic link" auth flows use.
 """
 import frappe
 from frappe.utils import add_to_date, now_datetime
@@ -12,7 +23,23 @@ from buildpolaris_bff.shared.security_log import log_security_event
 ACTIVATION_TOKEN_TTL_HOURS = 48
 
 
-def register_tenant(company_name: str, admin_email: str, admin_full_name: str,
+def _resolve_country(country: str) -> str:
+	"""buildpolaris_pwa's RegisterTenantPage.tsx has no visible country
+	input - it silently sends a hardcoded default of 'US' (an ISO code),
+	but Company.country is a Link to ERPNext's own Country doctype, whose
+	primary key is the full name ('United States'), not the code. ERPNext
+	ships every Country with a `code` field (lowercase ISO-3166 alpha-2),
+	so this resolves either form rather than failing Link validation on
+	the very first step of onboarding."""
+	if frappe.db.exists("Country", country):
+		return country
+	resolved = frappe.db.get_value("Country", {"code": country.lower()}, "name")
+	if resolved:
+		return resolved
+	raise ValidationError(f"'{country}' is not a recognized country.")
+
+
+def register_tenant(company_name: str, admin_email: str, admin_first_name: str,
                      country: str = "United States", default_currency: str = "USD") -> dict:
 	"""Creates an isolated ERPNext Company (locale-aware CoA/currency/fiscal
 	year sourced from ERPNext, not a hand-built onboarding form) and a
@@ -30,12 +57,12 @@ def register_tenant(company_name: str, admin_email: str, admin_full_name: str,
 	company = frappe.new_doc("Company")
 	company.company_name = company_name
 	company.default_currency = default_currency
-	company.country = country
+	company.country = _resolve_country(country)
 	company.insert(ignore_permissions=True)
 
 	user = frappe.new_doc("User")
 	user.email = admin_email
-	user.first_name = admin_full_name
+	user.first_name = admin_first_name
 	user.enabled = 0  # disabled pending activation
 	user.send_welcome_email = 0
 	user.append("roles", {"role": "BuildPolaris Admin"})
@@ -63,10 +90,13 @@ def register_tenant(company_name: str, admin_email: str, admin_full_name: str,
 	return {"company": company.name, "user": user.name, "activation_token": raw_token}
 
 
-def activate_account(user: str, raw_token: str, new_password: str) -> dict:
-	"""Verifies the single-use, hashed activation token (constant-time
-	comparison, NFR-SEC.3) and enables the account with the chosen password."""
-	token_doc = _find_valid_token(user, raw_token, purpose="Activation")
+def activate_account(raw_token: str, new_password: str) -> dict:
+	"""Verifies a single-use, hashed activation/invite token (constant-time
+	comparison, NFR-SEC.3) and enables the matching account with the chosen
+	password. Handles BOTH self-registration ('Activation' purpose) and
+	invited-user ('Invite' purpose) tokens - see module docstring."""
+	token_doc = _find_valid_token_by_hash(raw_token, purposes=["Activation", "Invite"])
+	user = token_doc.user
 
 	frappe.db.set_value("User", user, "enabled", 1)
 	if frappe.db.has_column("User", "bp_invite_status"):
@@ -79,15 +109,19 @@ def activate_account(user: str, raw_token: str, new_password: str) -> dict:
 	user_doc.save(ignore_permissions=True)
 
 	token_doc.mark_used()
-	log_security_event("ACCOUNT_ACTIVATED", {"user": user})
+	log_security_event("ACCOUNT_ACTIVATED", {"user": user, "purpose": token_doc.purpose})
 	frappe.db.commit()
 	return {"user": user, "status": "activated"}
 
 
-def _find_valid_token(user: str, raw_token: str, purpose: str):
+def _find_valid_token_by_hash(raw_token: str, purposes: list[str]):
+	"""Scans pending (unused, unexpired) tokens across the given purposes
+	and returns the one whose hash matches raw_token, constant-time
+	compared. There is deliberately no `user` filter - see module
+	docstring for why."""
 	candidates = frappe.get_all(
 		"Account Activation Token",
-		filters={"user": user, "purpose": purpose, "used_at": ["is", "not set"]},
+		filters={"purpose": ["in", purposes], "used_at": ["is", "not set"]},
 		fields=["name"],
 		ignore_permissions=True,
 	)
@@ -95,9 +129,9 @@ def _find_valid_token(user: str, raw_token: str, purpose: str):
 		token_doc = frappe.get_doc("Account Activation Token", c.name)
 		if verify_token(raw_token, token_doc.token_hash):
 			if token_doc.is_expired():
-				log_security_event("EXPIRED_TOKEN_USE_ATTEMPT", {"user": user, "purpose": purpose})
-				raise ValidationError("Activation token has expired.")
+				log_security_event("EXPIRED_TOKEN_USE_ATTEMPT", {"purpose": token_doc.purpose})
+				raise ValidationError("This activation link has expired.")
 			return token_doc
 
-	log_security_event("INVALID_TOKEN_USE_ATTEMPT", {"user": user, "purpose": purpose})
-	raise ValidationError("Invalid or already-used activation token.")
+	log_security_event("INVALID_TOKEN_USE_ATTEMPT", {"purposes": purposes})
+	raise ValidationError("Invalid or already-used activation link.")

@@ -61,3 +61,11 @@ def list_minutes(series: str, user: str | None = None):
 	assert_project_permission(series_doc.project, ptype="read", user=user)
 	return frappe.get_all("Meeting Minutes", filters={"series": series},
 	                       fields=["name", "occurred_at", "notes"], order_by="occurred_at desc")
+def list_series(project):
+	from buildpolaris_bff.shared.permissions import assert_project_permission
+	assert_project_permission(project, ptype="read")
+	return frappe.get_all("Meeting Series",
+		filters={"project": project},
+		fields=["name", "title", "recurrence_rule", "creation"],
+		order_by="creation desc",
+	)
