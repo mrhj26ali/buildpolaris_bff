@@ -13,7 +13,7 @@ def create_daily_log(project, log_date, weather=None, notes=None, labor=None, eq
 	media: [{file, latitude, longitude, captured_at}] (FR-6.6, see
 	media_capture_service for EXIF fallback extraction)."""
 	submitted_by = submitted_by or frappe.session.user
-	assert_project_permission(project, ptype="write", user=submitted_by)
+	assert_project_permission(project, ptype="read", user=submitted_by)
 	assert_role("BuildPolaris Site Superintendent", "BuildPolaris Admin", user=submitted_by)
 
 	doc = frappe.get_doc({

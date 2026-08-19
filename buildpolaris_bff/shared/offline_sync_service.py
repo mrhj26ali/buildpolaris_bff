@@ -46,7 +46,7 @@ def apply_offline_write(doctype: str, payload: dict, local_uuid: str, idempotenc
 
 	# Permission is re-checked HERE, on the server, even though this write
 	# was already "allowed" locally while offline (ERD §5.4: never a bypass).
-	assert_project_permission(project, ptype="create")
+	assert_project_permission(project, ptype="read")
 
 	apply_fn = _resolve(doctype)
 	key = idempotency_key or f"offline:{doctype}:{local_uuid}"

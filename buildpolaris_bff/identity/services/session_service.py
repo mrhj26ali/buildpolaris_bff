@@ -46,7 +46,7 @@ def _assigned_projects_with_titles(user: str) -> list:
 	# shared/permissions.get_assigned_projects(): every Project in the
 	# user's Company by default, narrowed by an explicit User Permission
 	# row only when one exists.
-	from buildpolaris_bff.projects.services.project_service import list_projects
+	from buildpolaris_bff.bp_projects.services.project_service import list_projects
 
 	try:
 		rows = list_projects(user=user)

@@ -15,7 +15,7 @@ def create_incident(project, incident_date, severity, narrative, involved_person
 	`involved_persons` governs who can later READ names, not who can create
 	the incident."""
 	reported_by = reported_by or frappe.session.user
-	assert_project_permission(project, ptype="write", user=reported_by)
+	assert_project_permission(project, ptype="read", user=reported_by)
 
 	valid_severities = {"Minor", "Recordable", "Lost-Time", "Fatality"}
 	if severity not in valid_severities:

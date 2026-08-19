@@ -10,7 +10,7 @@ from buildpolaris_bff.shared.permissions import assert_project_permission, asser
 def create_jsa(project, jsa_date, crew, hazards, prepared_by=None):
 	"""hazards: [{hazard, mitigation}] - required, non-empty (FR-6.2)."""
 	prepared_by = prepared_by or frappe.session.user
-	assert_project_permission(project, ptype="write", user=prepared_by)
+	assert_project_permission(project, ptype="read", user=prepared_by)
 	assert_role("BuildPolaris Safety Officer", "BuildPolaris Admin", user=prepared_by)
 
 	if not hazards:

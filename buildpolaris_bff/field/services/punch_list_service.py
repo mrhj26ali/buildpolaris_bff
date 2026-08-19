@@ -12,7 +12,7 @@ from buildpolaris_bff.shared.permissions import assert_project_permission
 
 def create_punch_item(project, location, description, assigned_to=None, rfi=None, created_by=None):
 	created_by = created_by or frappe.session.user
-	assert_project_permission(project, ptype="write", user=created_by)
+	assert_project_permission(project, ptype="read", user=created_by)
 
 	doc = frappe.get_doc({
 		"doctype": "Punch List Item",

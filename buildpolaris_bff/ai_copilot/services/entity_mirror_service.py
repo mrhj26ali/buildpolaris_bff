@@ -51,12 +51,12 @@ def mirror_hook(doc, method=None):
 	frappe.enqueue(
 		"buildpolaris_bff.ai_copilot.services.entity_mirror_service.run_mirror_job",
 		queue="short", enqueue_after_commit=True,
-		doctype=doc.doctype, name=doc.name, method=method or "on_update",
+		doctype=doc.doctype, name=doc.name, hook_method=method or "on_update",
 		modified=str(doc.modified), user=frappe.session.user, trace_id=get_trace_id(),
 	)
 
 
-def run_mirror_job(doctype: str, name: str, method: str, modified: str,
+def run_mirror_job(doctype: str, name: str, hook_method: str, modified: str,
                     user: str | None = None, trace_id: str | None = None):
 	try:
 		fields = MIRROR_FIELD_MAP.get(doctype, [])

@@ -5,14 +5,14 @@ validation, then calls exactly one services/ function - no business logic
 lives here.
 
 buildpolaris_pwa's CreateProjectDialog.tsx / projectsApi.ts already call
-buildpolaris_bff.projects.api.create_project and
-buildpolaris_bff.projects.api.get_project_summary by these exact dotted
+buildpolaris_bff.bp_projects.api.create_project and
+buildpolaris_bff.bp_projects.api.get_project_summary by these exact dotted
 paths - this module is what makes those calls resolve instead of 404ing.
 """
 import frappe
 
 from buildpolaris_bff.shared.api_envelope import success, api_guard
-from buildpolaris_bff.projects.services import project_service, project_summary_service
+from buildpolaris_bff.bp_projects.services import project_service, project_summary_service
 
 
 @frappe.whitelist()

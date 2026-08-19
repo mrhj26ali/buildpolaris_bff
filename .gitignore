@@ -59,3 +59,4 @@ _phase1_reference/
 .ruff_cache/
 a.sh
 dump_code.py
+buildpolaris_bff/tests
